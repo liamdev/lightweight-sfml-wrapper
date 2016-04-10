@@ -128,6 +128,18 @@ For convenience, the wrapper comes with a function for generating random numbers
 
 - `RandNorm()`: returns a random double in the range [0,1].
 
+### Gamepad API
+
+Currently runs using XInput, and so currently only supports Windows platforms.
+
+- `PadIsConnected(u32 pad_id)`, `PadJustConnected(u32 pad_id)`, and `PadJustDisconnected(u32 pad_id)` check the current connection state of a gamepad, and allow detection of connect/disconnect events.
+- `GetNumberOfPads()` and `GetMaximumPads()` query the total pad count, and the maximum supported pad count.
+- `PadKeyClicked(int pad_id, PadKey k)`, `PadKeyDown(int pad_id, PadKey k)`, and `PadKeyUnclicked(int pad_id, PadKey k)` check the state/events for the given gamepad button. Makes use of the `PadKey` type.
+- `LeftTrigger(int pad_id)` and `RightTrigger(int pad_id)` return the current trigger values for the specified gamepad.
+- `LeftStick(int pad_id)` and `RightStick(int pad_id)` return the current thumbstick input for the specified gamepad.
+- `Rumble(int pad_id, float small_motor, float large_motor)` allows a given gamepad to be vibrated. Motor values range from 0 to 1.
+- `StopRumble(int pad_id)` cancels the rumble on a given gamepad.
+
 ###Application defaults:
 
 There are some settings within the wrapper that are not yet exposed, but added as useful defaults. For now, disabling/altering these defaults will require altering `core.cpp`:
