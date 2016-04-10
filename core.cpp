@@ -3,6 +3,10 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
+#if INCLUDE_GAMEPAD_LIBRARY
+#include "gamepad.h"
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 // Internal state
 //////////////////////////////////////////////////////////////////////////
@@ -18,7 +22,7 @@ static bool			g_window_fullscreen = false;
 
 // Window
 static sf::VideoMode	g_video_mode = sf::VideoMode(g_window_width, g_window_height);
-static sf::RenderWindow	g_window = sf::RenderWindow(g_video_mode, g_window_title, sf::Style::Titlebar);
+static sf::RenderWindow	g_window;
 
 // Input: keyboard
 static bool			g_key_down[Key::KeyCount] = { false };
@@ -86,6 +90,8 @@ sf::Color Col(f4 c) { return sf::Color(u8(c.x * 255), u8(c.y * 255), u8(c.z * 25
 
 void CoreInit()
 {
+	g_window.create(g_video_mode, g_window_title, sf::Style::Titlebar);
+
 	// Init random number generator.
 	g_random_seeds[0] = 0;
 	g_random_seeds[1] = 1;
@@ -95,7 +101,12 @@ void CoreInit()
 	for (int i = 0; i < 2; ++i)
 		for (int j = 0; j < 64; ++j)
 			g_random_seeds[i] |= (rand() % 2) << j;
+
 	g_postprocess_texture.create(g_window_width, g_window_height);
+
+	#if INCLUDE_GAMEPAD_LIBRARY
+	GamepadInit();
+	#endif
 }
 
 bool StartFrame()
@@ -105,6 +116,11 @@ bool StartFrame()
 	g_frame_time = g_frameclock.restart().asMicroseconds() / (1000.0 * 1000.0);
 	g_frame_time = min(g_frame_time, 1.0 / 15.0);
 	++g_frame_num;
+	
+	// Update gamepad input.
+	#if INCLUDE_GAMEPAD_LIBRARY
+	GamepadStartFrame();
+	#endif
 
 	// Reset input state.
 	for (int i = 0; i < Key::KeyCount; ++i)
@@ -613,7 +629,7 @@ void SetShaderParameter(ShaderId shader, const char* name, float val)
 //////////////////////////////////////////////////////////////////////////
 // Sound API
 //////////////////////////////////////////////////////////////////////////
-
+/*
 SoundId LoadSound(const char* path)
 {
 	if(g_total_sounds < MAX_SOUNDS)
@@ -673,6 +689,7 @@ void StopAllSounds()
 		}
 	}
 }
+*/
 
 //////////////////////////////////////////////////////////////////////////
 // Random API
