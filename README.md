@@ -9,7 +9,9 @@ This API is currently primarily for personal use, and so is only somewhat docume
 
 Must include the SFML Include directory, and link `sfml-system.lib`, `sfml-window.lib`, `sfml-graphics.lib`, and `sfml-audio.lib`.
 
-On Windows, the gamepad library requires also linking `Xinput9_1_0.lib`.
+If gamepad support is not desired, set the `INCLUDE_GAMEPAD_LIBRARY` flag in the configuration section at the top of core.h to 0. The `gamepad.h` and `gamepad.cpp` files can be safely excluded from your project if this flag is set to 0.
+
+If gamepad support is desired (Windows only), then also link `Xinput9_1_0.lib`.
 
 ###Basic usage:
 
