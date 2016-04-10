@@ -216,11 +216,21 @@ void EndFrame()
 // Window API
 //////////////////////////////////////////////////////////////////////////
 
+static void RecreateWindow()
+{
+	g_window.create(sf::VideoMode(g_window_width, g_window_height), g_window_title, sf::Style::Titlebar | (g_window_fullscreen ? sf::Style::Fullscreen : 0));
+	g_window.setFramerateLimit(g_window_fps);
+	g_window.setMouseCursorVisible(g_window_mouse_visible);
+}
+
 void SetWindowSize(int x, int y)
 {
-	g_window_width = x;
-	g_window_height = y;
-	g_window.setSize(sf::Vector2u(x, y));
+	if(g_window_width != x || g_window_height != y)
+	{
+		g_window_width = x;
+		g_window_height = y;
+		RecreateWindow();
+	}
 }
 
 void SetWindowTitle(const char* title)
@@ -251,9 +261,7 @@ void SetWindowFullscreen(bool b)
 	if(g_window_fullscreen != b)
 	{
 		g_window_fullscreen = b;
-		g_window.create(g_video_mode, g_window_title, sf::Style::Titlebar | (b ? sf::Style::Fullscreen : 0));
-		g_window.setFramerateLimit(g_window_fps);
-		g_window.setMouseCursorVisible(g_window_mouse_visible);
+		RecreateWindow();
 	}
 }
 
@@ -705,4 +713,12 @@ double RandNorm()
 	g_random_seeds[1] = s1 ^ s0 ^ (s1 >> 18) ^ (s0 >> 5);
 	u64 rand_u64 = g_random_seeds[1] + s0;
 	return double(rand_u64) / u64(-1);
+}
+
+f4 RandPastelCol()
+{
+	f3 rgb((float)RandNorm(), (float)RandNorm(), (float)RandNorm());
+	rgb += 1.0f;
+	rgb *= 0.5f;
+	return f4(rgb, 1.0f); 
 }
