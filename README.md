@@ -5,6 +5,12 @@ A C-style API which wraps the functionality of SFML v2.3.2 in a more lightweight
 
 This API is currently primarily for personal use, and so is only somewhat documented, and is based on certain decisions that would be questionable were this to be used externally, such as its reliance on an included maths library (which provides basic 2D/3D/4D vector functionality, as well as some mathematical helpers).
 
+###Build Info:
+
+Must include the SFML Include directory, and link `sfml-system.lib`, `sfml-window.lib`, `sfml-graphics.lib`, and `sfml-audio.lib`.
+
+On Windows, the gamepad library requires also linking `Xinput9_1_0.lib`.
+
 ###Basic usage:
 
 The core update of the application (window display, input polling, timer updates etc.) is handled by calling corresponding pairs of `StartFrame()` and `EndFrame()`:
