@@ -54,7 +54,7 @@ f2		LeftStick(int pad_idx);
 f2		RightStick(int pad_idx);
 
 // Vibration.
-void	Rumble(int pad_idx, float small_motor, float large_motor);
+void	Rumble(int pad_idx, float small_motor, float large_motor, float duration);
 void	StopRumble(int pad_idx);
 
 //////////////////////////////////////////////////////////////////////////

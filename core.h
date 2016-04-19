@@ -138,10 +138,13 @@ TextureId	LoadTexture(const char* path);
 // Sound API
 //////////////////////////////////////////////////////////////////////////
 
-SoundId			LoadSound(const char* path);
-SoundInstanceId	PlaySound(SoundId sound, float volume = 1, float pitch = 1, bool loop = false);
-void			SetSoundVolume(SoundInstanceId sound_instance, float volume);
-void			StopAllSounds();
+// These have to be Snd because Windows 8.1 SDK does a #define on PlaySound :(
+SoundId			LoadSnd(const char* path);
+SoundInstanceId	PlaySnd(SoundId sound, float volume = 1, float pitch = 1, bool loop = false);
+float			GetSndVolume(SoundInstanceId sound_instance);
+void			StopSnd(SoundInstanceId sound);
+void			SetSndVolume(SoundInstanceId sound_instance, float volume);
+void			StopAllSnds();
 
 //////////////////////////////////////////////////////////////////////////
 // Random API

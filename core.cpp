@@ -56,7 +56,7 @@ static sf::Texture		g_no_texture;
 static u32				g_total_textures = 0;
 
 // Sprites
-static const int		MAX_SPRITES = 1000;
+static const int		MAX_SPRITES = 8192;
 static sf::Sprite		g_sprites[MAX_SPRITES];
 static u32				g_total_sprites;
 
@@ -637,8 +637,8 @@ void SetShaderParameter(ShaderId shader, const char* name, float val)
 //////////////////////////////////////////////////////////////////////////
 // Sound API
 //////////////////////////////////////////////////////////////////////////
-/*
-SoundId LoadSound(const char* path)
+
+SoundId LoadSnd(const char* path)
 {
 	if(g_total_sounds < MAX_SOUNDS)
 	{
@@ -655,7 +655,7 @@ SoundId LoadSound(const char* path)
 	return -1;
 }
 
-SoundInstanceId PlaySound(SoundId sound, float volume, float pitch, bool loop)
+SoundInstanceId PlaySnd(SoundId sound, float volume, float pitch, bool loop)
 {
 	if (sound >= g_total_sounds)
 		return -1;
@@ -676,7 +676,19 @@ SoundInstanceId PlaySound(SoundId sound, float volume, float pitch, bool loop)
 	return -1;
 }
 
-void SetSoundVolume(SoundInstanceId sound_instance, float volume)
+float GetSndVolume(SoundInstanceId sound_instance)
+{
+	if(sound_instance >= g_total_sounds)
+	{
+		printf("[ERR]: Invalid sound channel ID.\n");
+		return 0;
+	}
+
+	float vol = g_sounds[sound_instance].getVolume();
+	return sqrt(vol / 100.0f);
+}
+
+void SetSndVolume(SoundInstanceId sound_instance, float volume)
 {
 	if(sound_instance >= g_total_sounds)
 	{
@@ -687,7 +699,19 @@ void SetSoundVolume(SoundInstanceId sound_instance, float volume)
 	g_sounds[sound_instance].setVolume(volume * volume * 100.0f);
 }
 
-void StopAllSounds()
+void StopSnd(SoundInstanceId sound)
+{
+	if(sound >= g_total_sounds)
+	{
+		printf("[ERR]: Invalid sound channel ID.\n");
+		return;
+	}
+
+	if(g_sounds[sound].getStatus() != sf::SoundSource::Stopped)
+		g_sounds[sound].stop();
+}
+
+void StopAllSnds()
 {
 	for (int i = 0; i < MAX_SOUNDS; ++i)
 	{
@@ -697,7 +721,6 @@ void StopAllSounds()
 		}
 	}
 }
-*/
 
 //////////////////////////////////////////////////////////////////////////
 // Random API

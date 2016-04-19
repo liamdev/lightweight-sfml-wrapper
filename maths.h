@@ -19,6 +19,7 @@ template <typename T> inline T min(T a, T b) { return a < b ? a : b; }
 template <typename T> inline T max(T a, T b) { return a > b ? a : b; }
 template <typename T> inline T lerp(T a, T b, float t) { return a + (b - a) * t; }
 template <typename T> inline T clamp(T v, T minval, T maxval) { return min(max(v, minval), maxval); }
+template <typename T> inline T saturate(T v) { return clamp<T>(v, 0, 1); }
 
 template <typename T> inline int sign(T v) { return v < 0 ? -1 : 1; }
 
@@ -83,6 +84,7 @@ struct vec4
 	vec4() : x(0), y(0), z(0), w(0) {}
 	vec4(T _x, T _y, T _z, T _w) : x(_x), y(_y), z(_z), w(_w) {}
 	vec4(T xyzw) : x(xyzw), y(xyzw), z(xyzw), w(xyzw) {}
+	vec4(vec3<T> _xyz, T _w) : x(_xyz.x), y(_xyz.y), z(_xyz.z), w(_w) {}
 	vec4<T> operator+(const vec4<T>& v) const { return vec4(x+v.x, y+v.y, z+v.z, w+v.w); }
 	vec4<T> operator-(const vec4<T>& v) const { return vec4(x-v.x, y-v.y, z-v.z, w-v.w); }
 	vec4<T> operator*(const vec4<T>& v) const { return vec4(x*v.x, y*v.y, z*v.z, w*v.w); }
@@ -112,6 +114,7 @@ typedef vec4<float> f4;
 
 inline float	dot(f2 a, f2 b)		{ return a.x*b.x + a.y*b.y; }
 inline float	squared_len(f2 v)	{ return dot(v, v);  }
+inline float	cross(f2 a, f2 b)	{ return a.x*b.y - a.y*b.x; }
 inline float	length(f2 v)		{ return sqrt(squared_len(v)); }
 inline f2		normalize(f2 v)		{ return v / length(v); }
 inline f2		sign(f2 v)			{ return f2(v.x < 0 ? -1.0f : 1.0f, v.y < 0 ? -1.0f : 1.0f); }

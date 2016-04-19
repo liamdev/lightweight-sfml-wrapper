@@ -16,6 +16,7 @@ static bool			g_buttons_curr[MAX_GAMEPADS][PadKey::COUNT];
 static bool			g_buttons_prev[MAX_GAMEPADS][PadKey::COUNT];
 static bool			g_just_connected[MAX_GAMEPADS];
 static bool			g_just_disconnected[MAX_GAMEPADS];
+static float		g_rumble_timers[MAX_GAMEPADS];
 
 //////////////////////////////////////////////////////////////////////////
 // Platform-specific gamepad API
@@ -293,13 +294,14 @@ void RumbleWin32(int idx, float small_motor, float large_motor)
 	#endif
 }
 
-void Rumble(int idx, float small_motor, float large_motor)
+void Rumble(int idx, float small_motor, float large_motor, float duration)
 {
 	if(!IsValidController(idx) || !g_connected[idx])
 		return;
 
 	small_motor = clamp(small_motor, 0.0f, 1.0f);
 	large_motor = clamp(large_motor, 0.0f, 1.0f);
+	g_rumble_timers[idx] = duration;
 
 	#ifdef _WIN32
 	RumbleWin32(idx, small_motor, large_motor);
@@ -346,6 +348,13 @@ void GamepadStartFrame()
 		{
 			g_buttons_prev[i][j] = g_buttons_curr[i][j];
 			g_buttons_curr[i][j] = false;
+		}
+
+		if(g_connected[i])
+		{
+			g_rumble_timers[i] = max(g_rumble_timers[i] - float(GetFrameTime()), 0.0f);
+			if(g_rumble_timers[i] == 0)
+				StopRumble(i);
 		}
 	}
 
