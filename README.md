@@ -128,13 +128,14 @@ DrawCircle(f2(60,60), 25, f4(0,0,1,0));
 
 The majority of the window settings API should be self-explanatory. The only noteworthy addition is:
 
-- `ScreenShake()`: applies screen shake to the camera, with duration and intensity proportional to the value passed in.
+- `ScreenShake(float amount)`: applies screen shake to the camera, with duration and intensity proportional to the value passed in.
 
 ### Random API
 
 For convenience, the wrapper comes with a function for generating random numbers using xorshift128+ (automatically seeded on initialising the wrapper):
 
 - `RandNorm()`: returns a random double in the range [0,1].
+- `RandPastelCol()`: returns a random pastel colour, with full alpha.
 
 ### Gamepad API
 
