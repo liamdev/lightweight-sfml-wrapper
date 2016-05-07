@@ -1,4 +1,4 @@
-# lightweight-sfml-wrapper
+# Lightweight SFML Wrapper
 A C-style API which wraps the functionality of SFML v2.3.2 in a more lightweight interface.
 
 ###Overview:
@@ -128,24 +128,25 @@ DrawCircle(f2(60,60), 25, f4(0,0,1,0));
 
 The majority of the window settings API should be self-explanatory. The only noteworthy addition is:
 
-- `ScreenShake()`: applies screen shake to the camera, with duration and intensity proportional to the value passed in.
+- `ScreenShake(float amount)`: applies screen shake to the camera, with duration and intensity proportional to the value passed in.
 
 ### Random API
 
 For convenience, the wrapper comes with a function for generating random numbers using xorshift128+ (automatically seeded on initialising the wrapper):
 
 - `RandNorm()`: returns a random double in the range [0,1].
+- `RandPastelCol()`: returns a random pastel colour, with full alpha.
 
 ### Gamepad API
 
-Currently runs using XInput, and so currently only supports Windows platforms.
+Runs using XInput, and so currently only supports Windows platforms.
 
 - `PadIsConnected(u32 pad_id)`, `PadJustConnected(u32 pad_id)`, and `PadJustDisconnected(u32 pad_id)` check the current connection state of a gamepad, and allow detection of connect/disconnect events.
 - `GetNumberOfPads()` and `GetMaximumPads()` query the total pad count, and the maximum supported pad count.
 - `PadKeyClicked(int pad_id, PadKey k)`, `PadKeyDown(int pad_id, PadKey k)`, and `PadKeyUnclicked(int pad_id, PadKey k)` check the state/events for the given gamepad button. Makes use of the `PadKey` type.
 - `LeftTrigger(int pad_id)` and `RightTrigger(int pad_id)` return the current trigger values for the specified gamepad.
 - `LeftStick(int pad_id)` and `RightStick(int pad_id)` return the current thumbstick input for the specified gamepad.
-- `Rumble(int pad_id, float small_motor, float large_motor)` allows a given gamepad to be vibrated. Motor values range from 0 to 1.
+- `Rumble(int pad_id, float small_motor, float large_motor, float duration)` allows a given gamepad to be vibrated. Motor values range from 0 to 1.
 - `StopRumble(int pad_id)` cancels the rumble on a given gamepad.
 
 ###Application defaults:
