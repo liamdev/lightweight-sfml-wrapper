@@ -21,8 +21,9 @@ static f4			g_window_clear_col = f4(0, 0, 0, 1);
 static bool			g_window_fullscreen = false;
 
 // Window
-static sf::VideoMode	g_default_video_mode = sf::VideoMode(g_window_width, g_window_height);
 static sf::RenderWindow	g_window;
+static f2				g_window_scaling = f2(1);
+static f2				g_window_borders = f2(0);
 
 // Input: keyboard
 static bool			g_key_down[Key::KeyCount] = { false };
@@ -89,6 +90,7 @@ static void SetNormalisedClipRegion(f2 top_left_px, f2 size_px);
 //////////////////////////////////////////////////////////////////////////
 
 sf::Color Col(f4 c) { return sf::Color(u8(c.x * 255), u8(c.y * 255), u8(c.z * 255), u8(c.w * 255)); }
+f2 ScreenSize() { return f2(float(g_window_width), float(g_window_height)); }
 
 //////////////////////////////////////////////////////////////////////////
 // Game API
@@ -96,7 +98,7 @@ sf::Color Col(f4 c) { return sf::Color(u8(c.x * 255), u8(c.y * 255), u8(c.z * 25
 
 void CoreInit()
 {
-	g_window.create(g_default_video_mode, g_window_title, sf::Style::Titlebar);
+	g_window.create(sf::VideoMode(g_window_width, g_window_height), g_window_title, sf::Style::Titlebar);
 
 	// Init random number generator.
 	g_random_seeds[0] = 0;
@@ -203,20 +205,50 @@ bool StartFrame()
 	g_window.setView(v);
 	g_screenshake_amount = max(g_screenshake_amount - (float)GetFrameTime(), 0.0f);
 
-	// Default key bindings: F11 toggles fullscreen; Escape closes the application.
-	if (KeyUnclicked(Key::F11))
-		SetWindowFullscreen(!g_window_fullscreen);
-	if (KeyUnclicked(Key::Escape))
-		return false;
+	// Default key bindings.
+	{
+		// F11 or Alt+Enter toggles fullscreen.
+		if(KeyClicked(Key::F11) || (KeyDown(Key::LAlt) && KeyClicked(Key::Return)))
+			SetWindowFullscreen(!g_window_fullscreen);
 
+		// Escape closes the application.
+		if(KeyUnclicked(Key::Escape))
+			return false;
+	}
+
+	// Clear the window.
 	g_window.clear(Col(g_window_clear_col));
+
+	// Do black borders if we're in a imperfect fullscreen ratio.
+	if(g_window_fullscreen)
+	{
+		bool xborders = g_window_borders.x > 0;
+		if(xborders)
+		{
+			DrawQuad(f2(0), f2(g_window_borders.x, float(g_window_height)), f4(0,0,0,1));
+			DrawQuad(f2(g_window_width - g_window_borders.x, 0), ScreenSize(), f4(0,0,0,1));
+		}
+		else
+		{
+			DrawQuad(f2(0), f2(float(g_window_width), g_window_borders.y), f4(0,0,0,1));
+			DrawQuad(f2(0, g_window_height - g_window_borders.y), ScreenSize(), f4(0,0,0,1));
+		}
+
+		float scaling = xborders ? g_window_scaling.y : g_window_scaling.x;
+		SetNormalisedClipRegion(g_window_borders / ScreenSize(), f2(scaling));
+	}
+
 	return g_window.isOpen();
 }
 
 void EndFrame()
 {
+	// Draw the window contents.
 	g_window.display();
+
+	// Reset clipping and coordinate regions.
 	SetNormalisedClipRegion(f2(0), f2(1));
+	SetWindowWorldRegion(f2(0), ScreenSize());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -228,23 +260,30 @@ static bool RecreateWindow(int width, int height, bool fullscreen)
 	sf::VideoMode video_mode(width, height);
 	if(fullscreen && !video_mode.isValid())
 	{
-		// TODO: revisit this once clipping regions are in, to better handle the need to resize
-		// the draw region when the fullscreen video mode for the current width and height is invalid.
-		/*
 		const std::vector<sf::VideoMode>& video_modes = video_mode.getFullscreenModes();
 		if(video_modes.empty())
 		{
 			return false;
 		}
+
+		// Figure out whether we want black borders on the sides, or at the top/bottom.
+		float curr_ratio = float(video_mode.width) / video_mode.height;
+		float fscr_ratio = float(video_modes[0].width) / video_modes[0].height;
+		g_window_scaling.x = float(video_modes[0].width) / video_mode.width;
+		g_window_scaling.y = float(video_modes[0].height) / video_mode.height;
+		if(curr_ratio > fscr_ratio)
+		{
+			g_window_borders = f2(0, (video_modes[0].height - (video_mode.height * g_window_scaling.x)) * 0.5f);
+		}
+		else
+		{
+			g_window_borders = f2((video_modes[0].width - (video_mode.width * g_window_scaling.y)) * 0.5f, 0);
+		}
 		video_mode = video_modes[0];
-		*/
-		printf("The window's current width and height is not a valid fullscreen resolution. Remaining in windowed mode.\n");
-		printf("TODO: dynamic resizing of the windowed draw region to fit a fullscreen resolution.\n");
-		return false;
 	}
 
-	g_window_width = width;
-	g_window_height = height;
+	g_window_width = video_mode.width;
+	g_window_height = video_mode.height;
 	g_window_fullscreen = fullscreen;
 	g_window.create(video_mode, g_window_title, sf::Style::Titlebar | (fullscreen ? sf::Style::Fullscreen : 0));
 	g_window.setFramerateLimit(g_window_fps);
@@ -252,10 +291,10 @@ static bool RecreateWindow(int width, int height, bool fullscreen)
 	return true;
 }
 
-static void SetNormalisedClipRegion(f2 top_left_px, f2 size_px)
+static void SetNormalisedClipRegion(f2 top_left, f2 size)
 {
 	sf::View curr_view = g_window.getView();
-	curr_view.setViewport(sf::FloatRect(top_left_px.x, top_left_px.y, size_px.x, size_px.y));
+	curr_view.setViewport(sf::FloatRect(top_left.x, top_left.y, size.x, size.y));
 	g_window.setView(curr_view);
 }
 
@@ -294,15 +333,38 @@ void SetWindowFullscreen(bool b)
 {
 	if(g_window_fullscreen != b)
 	{
-		RecreateWindow(g_window_width, g_window_height, b);
+		float width = float(g_window_width);
+		float height = float(g_window_height);
+		if(!b)
+		{
+			width /= g_window_scaling.x;
+			height /= g_window_scaling.y;
+		}
+		RecreateWindow(int(width), int(height), b);
 	}
 }
 
 void SetWindowClipRegion(f2 top_left_px, f2 size_px)
 {
-	f2 window_size(g_window_width, g_window_height);
-	top_left_px /= window_size;
-	size_px /= window_size;
+	// Ensure the start clip position is non-negative.
+	f2 max_px = ScreenSize();
+	top_left_px = max(top_left_px, f2(0));
+
+	// Deal with clipping changes when we have black borders to remain within.
+	if(g_window_fullscreen)
+	{
+		bool xborder = g_window_borders.x > 0;
+		size_px *= xborder ? g_window_scaling.y : g_window_scaling.x;
+		max_px = ScreenSize() - g_window_borders;
+		top_left_px += g_window_borders;
+	}
+
+	// Ensure the clipping region doesn't go outside of the screen bounds.
+	size_px = min(top_left_px + size_px, max_px - top_left_px);
+
+	// Normalise the clipping coordinates.
+	top_left_px /= ScreenSize();
+	size_px /= ScreenSize();
 	SetNormalisedClipRegion(top_left_px, size_px);
 }
 
@@ -316,12 +378,12 @@ void SetWindowWorldRegion(f2 top_left_world, f2 size_world)
 
 void ResetWindowClipRegion()
 {
-	SetWindowClipRegion(f2(0), f2(g_window_width, g_window_height));
+	SetWindowClipRegion(f2(0), ScreenSize());
 }
 
 void ResetWindowWorldRegion()
 {
-	SetWindowWorldRegion(f2(0), f2(g_window_width, g_window_height));
+	SetWindowWorldRegion(f2(0), ScreenSize());
 }
 
 void ScreenShake(float amount)

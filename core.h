@@ -19,12 +19,16 @@
 	Author: Liam de Valmency (liam.devalmency@gmail.com / @Kilo_bytes)
 
 	TODO: 
-		- Fix constant thread creation/deletion issue arising from SMFL audio system
-		- Fix fullscreen switches when the window resolution is not a valid fullscreen video mode.
-		- Option to change whether Y=0 refers to bottom or top of screen.
 		- An internal 2D physics system would be nice.
 		- Rework the sprite API to be less cumbersome.
 		- Rework the font API to be less cumbersome (add single-call API in addition to stateful one; add push/pop to stateful API).
+		- Fix constant thread creation/deletion issue arising from SMFL audio system.
+		- Fix fullscreen switch requiring an alt-tab out, followed by an alt-tab back in, before the window shows its contents properly.
+		- Fix game logic continuing to run while the window is unfocused.
+		- Fix fullscreen black border + screen shake combination giving undesirable results.
+
+	TODO-Optional:
+		- Option to change whether Y=0 refers to bottom or top of screen.
 */
 
 //////////////////////////////////////////////////////////////////////////
