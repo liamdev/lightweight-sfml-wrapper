@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <stdio.h>
+#include <cstdint>
 #include "maths.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -19,7 +20,9 @@
 
 	TODO: 
 		- Fix constant thread creation/deletion issue arising from SMFL audio system
-		- Clipping regions
+		- Clipping regions (e.g. for split-screen).
+		- Option to change whether Y=0 refers to bottom or top of screen.
+		- An internal 2D physics system would be nice.
 */
 
 //////////////////////////////////////////////////////////////////////////
@@ -37,15 +40,15 @@ typedef sf::Keyboard Key;
 typedef sf::Sprite Sprite;
 
 // Types
-typedef char				u8;
-typedef unsigned int		u32;
-typedef unsigned long long	u64;
-typedef u32					FontId;
-typedef u32					ShaderId;
-typedef u32					SoundId;
-typedef u32					SoundInstanceId;
-typedef u32					SpriteId;
-typedef u32					TextureId;
+typedef uint8_t		u8;
+typedef uint32_t	u32;
+typedef uint64_t	u64;
+typedef u32			FontId;
+typedef u32			ShaderId;
+typedef u32			SoundId;
+typedef u32			SoundInstanceId;
+typedef u32			SpriteId;
+typedef u32			TextureId;
 
 enum class SpriteOrigin { TopLeft, Centre };
 enum class TextAlign { Left, Centre };
@@ -138,13 +141,12 @@ TextureId	LoadTexture(const char* path);
 // Sound API
 //////////////////////////////////////////////////////////////////////////
 
-// These have to be Snd because Windows 8.1 SDK does a #define on PlaySound :(
-SoundId			LoadSnd(const char* path);
-SoundInstanceId	PlaySnd(SoundId sound, float volume = 1, float pitch = 1, bool loop = false);
-float			GetSndVolume(SoundInstanceId sound_instance);
-void			StopSnd(SoundInstanceId sound);
-void			SetSndVolume(SoundInstanceId sound_instance, float volume);
-void			StopAllSnds();
+SoundId			LoadSound(const char* path);
+SoundInstanceId	PlaySound(SoundId sound, float volume = 1, float pitch = 1, bool loop = false);
+float			GetSoundVolume(SoundInstanceId sound_instance);
+void			StopSound(SoundInstanceId sound);
+void			SetSoundVolume(SoundInstanceId sound_instance, float volume);
+void			StopAllSounds();
 
 //////////////////////////////////////////////////////////////////////////
 // Random API
@@ -164,4 +166,15 @@ f4		RandPastelCol();
 #define ASSERT(check, msg) _ASSERT(check)
 #else
 #define ASSERT(check,msg) do {} while(0)
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+// INTERNAL API, PLEASE IGNORE
+//////////////////////////////////////////////////////////////////////////
+
+// Windows SDK stomps all over our audio API. Undo this villainy.
+#ifdef UNICODE
+#define PlaySoundW PlaySound
+#else
+#define PlaySoundA PlaySound
 #endif

@@ -638,7 +638,7 @@ void SetShaderParameter(ShaderId shader, const char* name, float val)
 // Sound API
 //////////////////////////////////////////////////////////////////////////
 
-SoundId LoadSnd(const char* path)
+SoundId LoadSound(const char* path)
 {
 	if(g_total_sounds < MAX_SOUNDS)
 	{
@@ -655,7 +655,7 @@ SoundId LoadSnd(const char* path)
 	return -1;
 }
 
-SoundInstanceId PlaySnd(SoundId sound, float volume, float pitch, bool loop)
+SoundInstanceId PlaySound(SoundId sound, float volume, float pitch, bool loop)
 {
 	if (sound >= g_total_sounds)
 		return -1;
@@ -676,7 +676,7 @@ SoundInstanceId PlaySnd(SoundId sound, float volume, float pitch, bool loop)
 	return -1;
 }
 
-float GetSndVolume(SoundInstanceId sound_instance)
+float GetSoundVolume(SoundInstanceId sound_instance)
 {
 	if(sound_instance >= g_total_sounds)
 	{
@@ -688,7 +688,7 @@ float GetSndVolume(SoundInstanceId sound_instance)
 	return sqrt(vol / 100.0f);
 }
 
-void SetSndVolume(SoundInstanceId sound_instance, float volume)
+void SetSoundVolume(SoundInstanceId sound_instance, float volume)
 {
 	if(sound_instance >= g_total_sounds)
 	{
@@ -699,7 +699,7 @@ void SetSndVolume(SoundInstanceId sound_instance, float volume)
 	g_sounds[sound_instance].setVolume(volume * volume * 100.0f);
 }
 
-void StopSnd(SoundInstanceId sound)
+void StopSound(SoundInstanceId sound)
 {
 	if(sound >= g_total_sounds)
 	{
@@ -711,7 +711,7 @@ void StopSnd(SoundInstanceId sound)
 		g_sounds[sound].stop();
 }
 
-void StopAllSnds()
+void StopAllSounds()
 {
 	for (int i = 0; i < MAX_SOUNDS; ++i)
 	{
