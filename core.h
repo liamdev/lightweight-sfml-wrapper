@@ -20,6 +20,7 @@
 
 	TODO: 
 		- Fix constant thread creation/deletion issue arising from SMFL audio system
+		- Fix fullscreen switches when the window resolution is not a valid fullscreen video mode.
 		- Clipping regions (e.g. for split-screen).
 		- Option to change whether Y=0 refers to bottom or top of screen.
 		- An internal 2D physics system would be nice.

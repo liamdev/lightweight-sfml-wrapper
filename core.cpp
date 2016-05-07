@@ -21,7 +21,7 @@ static f4			g_window_clear_col = f4(0, 0, 0, 1);
 static bool			g_window_fullscreen = false;
 
 // Window
-static sf::VideoMode	g_video_mode = sf::VideoMode(g_window_width, g_window_height);
+static sf::VideoMode	g_default_video_mode = sf::VideoMode(g_window_width, g_window_height);
 static sf::RenderWindow	g_window;
 
 // Input: keyboard
@@ -90,7 +90,7 @@ sf::Color Col(f4 c) { return sf::Color(u8(c.x * 255), u8(c.y * 255), u8(c.z * 25
 
 void CoreInit()
 {
-	g_window.create(g_video_mode, g_window_title, sf::Style::Titlebar);
+	g_window.create(g_default_video_mode, g_window_title, sf::Style::Titlebar);
 
 	// Init random number generator.
 	g_random_seeds[0] = 0;
@@ -216,20 +216,40 @@ void EndFrame()
 // Window API
 //////////////////////////////////////////////////////////////////////////
 
-static void RecreateWindow()
+static bool RecreateWindow(int width, int height, bool fullscreen)
 {
-	g_window.create(sf::VideoMode(g_window_width, g_window_height), g_window_title, sf::Style::Titlebar | (g_window_fullscreen ? sf::Style::Fullscreen : 0));
+	sf::VideoMode video_mode(width, height);
+	if(fullscreen && !video_mode.isValid())
+	{
+		// TODO: revisit this once clipping regions are in, to better handle the need to resize
+		// the draw region when the fullscreen video mode for the current width and height is invalid.
+		/*
+		const std::vector<sf::VideoMode>& video_modes = video_mode.getFullscreenModes();
+		if(video_modes.empty())
+		{
+			return false;
+		}
+		video_mode = video_modes[0];
+		*/
+		printf("The window's current width and height is not a valid fullscreen resolution. Remaining in windowed mode.\n");
+		printf("TODO: dynamic resizing of the windowed draw region to fit a fullscreen resolution.\n");
+		return false;
+	}
+
+	g_window_width = width;
+	g_window_height = height;
+	g_window_fullscreen = fullscreen;
+	g_window.create(video_mode, g_window_title, sf::Style::Titlebar | (fullscreen ? sf::Style::Fullscreen : 0));
 	g_window.setFramerateLimit(g_window_fps);
 	g_window.setMouseCursorVisible(g_window_mouse_visible);
+	return true;
 }
 
 void SetWindowSize(int x, int y)
 {
 	if(g_window_width != x || g_window_height != y)
 	{
-		g_window_width = x;
-		g_window_height = y;
-		RecreateWindow();
+		RecreateWindow(x, y, g_window_fullscreen);
 	}
 }
 
@@ -260,8 +280,7 @@ void SetWindowFullscreen(bool b)
 {
 	if(g_window_fullscreen != b)
 	{
-		g_window_fullscreen = b;
-		RecreateWindow();
+		RecreateWindow(g_window_width, g_window_height, b);
 	}
 }
 

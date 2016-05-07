@@ -28,6 +28,7 @@ static void GamepadStartFrameWin32()
 	ASSERT(false, "Win32 functionality called on non-Windows platform?");
 	return;
 	#else
+	#if INCLUDE_GAMEPAD_LIBRARY
 
 	const float THUMB_RANGE = 0x7FFF;
 	const float TRIGGER_RANGE = 0xFF;
@@ -77,6 +78,7 @@ static void GamepadStartFrameWin32()
 		}
 	}
 
+	#endif
 	#endif
 }
 
@@ -284,6 +286,7 @@ void RumbleWin32(int idx, float small_motor, float large_motor)
 	ASSERT(false, "Win32 functionality called on non-Windows platform?");
 	return;
 	#else
+	#if INCLUDE_GAMEPAD_LIBRARY
 
 	const double RUMBLE_RANGE = 0xFFFF;
 	RumbleState rumble_state;
@@ -291,6 +294,7 @@ void RumbleWin32(int idx, float small_motor, float large_motor)
 	rumble_state.wRightMotorSpeed = int(large_motor * RUMBLE_RANGE);
 	XInputSetState(idx, &rumble_state);
 
+	#endif
 	#endif
 }
 
