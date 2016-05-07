@@ -50,6 +50,7 @@ struct vec2
 	vec2<T>& operator-=(const T v) { x -= v; y -= v; return *this; }
 	vec2<T>& operator*=(const T v) { x *= v; y *= v; return *this; }
 	vec2<T>& operator/=(const T v) { x /= v; y /= v; return *this; }
+	vec2<T> operator-() { return vec2<T>(-x, -y); }
 };
 
 template <typename T>
@@ -75,6 +76,7 @@ struct vec3
 	vec3<T>& operator-=(const T v) { x -= v; y -= v; z -= v; return *this; }
 	vec3<T>& operator*=(const T v) { x *= v; y *= v; z *= v; return *this; }
 	vec3<T>& operator/=(const T v) { x /= v; y /= v; z /= v; return *this; }
+	vec3<T> operator-() { return vec3<T>(-x, -y, -z); }
 };
 
 template <typename T>
@@ -101,6 +103,7 @@ struct vec4
 	vec4<T>& operator-=(const T v) { x -= v; y -= v; z -= v; w -= v; return *this; }
 	vec4<T>& operator*=(const T v) { x *= v; y *= v; z *= v; w *= v; return *this; }
 	vec4<T>& operator/=(const T v) { x /= v; y /= v; z /= v; w /= v; return *this; }
+	vec4<T> operator-() { return vec4<T>(-x, -y, -z, -w); }
 };
 
 // Typed vector aliases.

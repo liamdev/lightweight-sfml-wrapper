@@ -21,9 +21,10 @@
 	TODO: 
 		- Fix constant thread creation/deletion issue arising from SMFL audio system
 		- Fix fullscreen switches when the window resolution is not a valid fullscreen video mode.
-		- Clipping regions (e.g. for split-screen).
 		- Option to change whether Y=0 refers to bottom or top of screen.
 		- An internal 2D physics system would be nice.
+		- Rework the sprite API to be less cumbersome.
+		- Rework the font API to be less cumbersome (add single-call API in addition to stateful one; add push/pop to stateful API).
 */
 
 //////////////////////////////////////////////////////////////////////////
@@ -66,13 +67,21 @@ void EndFrame();
 // Window API
 //////////////////////////////////////////////////////////////////////////
 
-void SetWindowSize(int x, int y);
+// General window parameters.
 void SetWindowTitle(const char* title);
 void SetWindowFPSLimit(u32 fps);
 void SetWindowMouseCursorVisible(bool b);
 void SetWindowClearColour(f4 colour);
-void SetWindowFullscreen(bool b);
 
+// Window sizing / clipping / coordinates.
+void SetWindowSize(int x, int y);
+void SetWindowFullscreen(bool b);
+void SetWindowClipRegion(f2 top_left_px, f2 size_px);
+void SetWindowWorldRegion(f2 top_left_world, f2 size_world);
+void ResetWindowClipRegion();
+void ResetWindowWorldRegion();
+
+// Screen shake!
 void ScreenShake(float amount);
 
 //////////////////////////////////////////////////////////////////////////

@@ -79,6 +79,12 @@ static u64				g_random_seeds[2];
 static float			g_screenshake_amount = 0;
 
 //////////////////////////////////////////////////////////////////////////
+// Forward declarations as necessary.
+//////////////////////////////////////////////////////////////////////////
+
+static void SetNormalisedClipRegion(f2 top_left_px, f2 size_px);
+
+//////////////////////////////////////////////////////////////////////////
 // Internal API
 //////////////////////////////////////////////////////////////////////////
 
@@ -210,6 +216,7 @@ bool StartFrame()
 void EndFrame()
 {
 	g_window.display();
+	SetNormalisedClipRegion(f2(0), f2(1));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -245,12 +252,11 @@ static bool RecreateWindow(int width, int height, bool fullscreen)
 	return true;
 }
 
-void SetWindowSize(int x, int y)
+static void SetNormalisedClipRegion(f2 top_left_px, f2 size_px)
 {
-	if(g_window_width != x || g_window_height != y)
-	{
-		RecreateWindow(x, y, g_window_fullscreen);
-	}
+	sf::View curr_view = g_window.getView();
+	curr_view.setViewport(sf::FloatRect(top_left_px.x, top_left_px.y, size_px.x, size_px.y));
+	g_window.setView(curr_view);
 }
 
 void SetWindowTitle(const char* title)
@@ -276,12 +282,46 @@ void SetWindowClearColour(f4 colour)
 	g_window_clear_col = colour;
 }
 
+void SetWindowSize(int x, int y)
+{
+	if(g_window_width != x || g_window_height != y)
+	{
+		RecreateWindow(x, y, g_window_fullscreen);
+	}
+}
+
 void SetWindowFullscreen(bool b)
 {
 	if(g_window_fullscreen != b)
 	{
 		RecreateWindow(g_window_width, g_window_height, b);
 	}
+}
+
+void SetWindowClipRegion(f2 top_left_px, f2 size_px)
+{
+	f2 window_size(g_window_width, g_window_height);
+	top_left_px /= window_size;
+	size_px /= window_size;
+	SetNormalisedClipRegion(top_left_px, size_px);
+}
+
+void SetWindowWorldRegion(f2 top_left_world, f2 size_world)
+{
+	sf::View view = g_window.getView();
+	view.setCenter(top_left_world.x + size_world.x * 0.5f, top_left_world.y + size_world.y * 0.5f);
+	view.setSize(size_world.x, size_world.y);
+	g_window.setView(view);
+}
+
+void ResetWindowClipRegion()
+{
+	SetWindowClipRegion(f2(0), f2(g_window_width, g_window_height));
+}
+
+void ResetWindowWorldRegion()
+{
+	SetWindowWorldRegion(f2(0), f2(g_window_width, g_window_height));
 }
 
 void ScreenShake(float amount)
