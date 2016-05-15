@@ -98,9 +98,10 @@ f2 ScreenSize() { return f2(float(g_window_width), float(g_window_height)); }
 
 void CoreInit()
 {
+	// Open the window.
 	g_window.create(sf::VideoMode(g_window_width, g_window_height), g_window_title, sf::Style::Titlebar);
 
-	// Init random number generator.
+	// Initialise random number generator.
 	g_random_seeds[0] = 0;
 	g_random_seeds[1] = 1;
 	srand((unsigned int)time(NULL));
@@ -110,8 +111,10 @@ void CoreInit()
 		for (int j = 0; j < 64; ++j)
 			g_random_seeds[i] |= (rand() % 2) << j;
 
+	// Initialise postprocessing texture buffer.
 	g_postprocess_texture.create(g_window_width, g_window_height);
 
+	// Set up the gamepad library.
 	#if INCLUDE_GAMEPAD_LIBRARY
 	GamepadInit();
 	#endif

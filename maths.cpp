@@ -75,3 +75,52 @@ f2 EvalBezier(f2 p1, f2 c1, f2 p2, f2 c2, float t)
 
 	return p1*a + c1*b + c2*c + p2*d;
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Easing curves.
+//////////////////////////////////////////////////////////////////////////
+
+float EaseIn(float t, EaseType easing)
+{
+	switch(easing)
+	{
+		case EaseType::Linear:		return t;
+		case EaseType::Quadratic:	return t*t;
+		case EaseType::Cubic:		return t*t*t;
+		case EaseType::Quartic:		return t*t*t*t;
+		case EaseType::Quintic:		return t*t*t*t*t;
+		case EaseType::Sine:		return float(1-cos(PI*0.5f*t));
+		case EaseType::Exp:			return exp(10*(t-1));
+		default:					printf("Unrecognised easing requested.\n"); return t;
+	}
+}
+
+float EaseOut(float t, EaseType easing)
+{
+	switch(easing)
+	{
+		case EaseType::Linear:		return t;
+		case EaseType::Quadratic:	{ float i=t-1; return 1-i*i; }
+		case EaseType::Cubic:		{ float i=t-1; return 1+i*i*i; }
+		case EaseType::Quartic:		{ float i=t-1; return 1-i*i*i*i; }
+		case EaseType::Quintic:		{ float i=t-1; return 1+i*i*i*i*i; }
+		case EaseType::Sine:		return float(sin(t*PI*0.5f));
+		case EaseType::Exp:			return 1-exp(-10*t);
+		default:					printf("Unrecognised easing requested.\n"); return t;
+	}
+}
+
+float EaseInOut(float t, EaseType easing)
+{
+	switch(easing)
+	{
+		case EaseType::Linear:		return t;
+		case EaseType::Quadratic:	{ float i=t-1; float v=t*2; if(v < 1) return t*v; return 1-i*i*2; };
+		case EaseType::Cubic:		{ float i=t-1; float v=t*2; if(v < 1) return t*v*v; return 1+i*i*i*4; };
+		case EaseType::Quartic:		{ float i=t-1; float v=t*2; if(v < 1) return t*v*v*v; return 1-i*i*i*i*8; };
+		case EaseType::Quintic:		{ float i=t-1; float v=t*2; if(v < 1) return t*v*v*v*v; return 1+i*i*i*i*i*16; };
+		case EaseType::Sine:		return float((1-cos(PI*t))*0.5f);
+		case EaseType::Exp:			{ float v=t*2;  if(v < 1) return exp(10*(v-1)); return 1-exp(-10*t); }
+		default:					printf("Unrecognised easing requested.\n"); return t;
+	}
+}

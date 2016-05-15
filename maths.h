@@ -169,3 +169,13 @@ bool SquareSquareIntersect(f2 square1_pos, f2 square1_size, f2 square2_pos, f2 s
 f2 EvalHermite(f2 p1, f2 t1, f2 p2, f2 t2, float t);
 f2 EvalCatmullRom(f2 p1, f2 p2, f2 p3, f2 p4, float t);
 f2 EvalBezier(f2 p1, f2 c1, f2 p2, f2 c2, float t);
+
+//////////////////////////////////////////////////////////////////////////
+// Easing curves.
+//////////////////////////////////////////////////////////////////////////
+
+enum class EaseType { Linear, Quadratic, Cubic, Quartic, Quintic, Sine, Exp, COUNT };
+
+float EaseIn(float t, EaseType easing = EaseType::Quadratic);
+float EaseOut(float t, EaseType easing = EaseType::Quadratic);
+float EaseInOut(float t, EaseType easing = EaseType::Quadratic);
