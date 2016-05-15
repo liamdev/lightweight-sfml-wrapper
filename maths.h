@@ -166,9 +166,9 @@ bool SquareSquareIntersect(f2 square1_pos, f2 square1_size, f2 square2_pos, f2 s
 // Spline functionality.
 //////////////////////////////////////////////////////////////////////////
 
-f2 EvalHermite(f2 p1, f2 t1, f2 p2, f2 t2, float t);
-f2 EvalCatmullRom(f2 p1, f2 p2, f2 p3, f2 p4, float t);
-f2 EvalBezier(f2 p1, f2 c1, f2 p2, f2 c2, float t);
+f2 EvalHermite(f2 p1, f2 t1, f2 p2, f2 t2, float t);	// Interpolate along the spline between points p1 and p2, with tangents of t1 and t2 respectively.
+f2 EvalCatmullRom(f2 p1, f2 p2, f2 p3, f2 p4, float t);	// Interpolate along the spline between points p2 and p3, where p1 and p4 are the preceding and following points respectively.
+f2 EvalBezier(f2 p1, f2 c1, f2 p2, f2 c2, float t);		// Interpolate along the spline between points p1 and p2, with control points of c1 and c2 respectively.
 
 //////////////////////////////////////////////////////////////////////////
 // Easing curves.
@@ -176,6 +176,7 @@ f2 EvalBezier(f2 p1, f2 c1, f2 p2, f2 c2, float t);
 
 enum class EaseType { Linear, Quadratic, Cubic, Quartic, Quintic, Sine, Exp, COUNT };
 
+// These functions take a lerp time between 0 and 1, and scale it within the same range to give an eased lerp.
 float EaseIn(float t, EaseType easing = EaseType::Quadratic);
 float EaseOut(float t, EaseType easing = EaseType::Quadratic);
 float EaseInOut(float t, EaseType easing = EaseType::Quadratic);
