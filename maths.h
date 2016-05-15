@@ -161,3 +161,11 @@ inline void		print(f4 v)			{ printf("[%f %f %f %f]\n", v.x, v.y, v.z, v.w); }
 
 bool SquareCircleIntersect(f2 square_pos, f2 square_size, f2 circle_pos, float circle_radius);
 bool SquareSquareIntersect(f2 square1_pos, f2 square1_size, f2 square2_pos, f2 square2_size);
+
+//////////////////////////////////////////////////////////////////////////
+// Spline functionality.
+//////////////////////////////////////////////////////////////////////////
+
+f2 EvalHermite(f2 p1, f2 t1, f2 p2, f2 t2, float t);
+f2 EvalCatmullRom(f2 p1, f2 p2, f2 p3, f2 p4, float t);
+f2 EvalBezier(f2 p1, f2 c1, f2 p2, f2 c2, float t);

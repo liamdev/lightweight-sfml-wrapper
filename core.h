@@ -22,10 +22,12 @@
 		- An internal 2D physics system would be nice.
 		- Rework the sprite API to be less cumbersome.
 		- Rework the font API to be less cumbersome (add single-call API in addition to stateful one; add push/pop to stateful API).
+		- Some helper functionality for quickly creating particle systems/effects?
 		- Fix constant thread creation/deletion issue arising from SMFL audio system.
 		- Fix fullscreen switch requiring an alt-tab out, followed by an alt-tab back in, before the window shows its contents properly.
 		- Fix game logic continuing to run while the window is unfocused.
 		- Fix fullscreen black border + screen shake combination giving undesirable results.
+		- Fix negative coordinate clipping region not playing well with modified world region.
 
 	TODO-Optional:
 		- Option to change whether Y=0 refers to bottom or top of screen.
