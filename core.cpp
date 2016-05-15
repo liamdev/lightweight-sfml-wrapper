@@ -8,6 +8,18 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////
+// Internal types
+//////////////////////////////////////////////////////////////////////////
+
+struct FontState
+{
+	FontId font;
+	u32 size;
+	float scale;
+	f4 col;
+};
+
+//////////////////////////////////////////////////////////////////////////
 // Internal state
 //////////////////////////////////////////////////////////////////////////
 
@@ -41,14 +53,15 @@ static double		g_total_time = 0;
 static double		g_frame_time = 0;
 static u64			g_frame_num = 0;
 
-// Text
+// Fonts
 static const int	MAX_FONTS = 10;
 static sf::Font		g_fonts[MAX_FONTS];
 static u32			g_total_fonts = 0;
-static u32			g_font_size = 24;
-static f4			g_font_col = f4(1);
-static float		g_font_scale = 1;
-static FontId		g_active_font = 0;
+
+// Font styles
+static const int	MAX_FONT_STACK_SIZE = 10;
+static FontState	g_font_stack[MAX_FONT_STACK_SIZE];
+static u32			g_font_stack_size = 0;
 
 // Textures
 static const int		MAX_TEXTURES = 100;
@@ -113,6 +126,12 @@ void CoreInit()
 
 	// Initialise postprocessing texture buffer.
 	g_postprocess_texture.create(g_window_width, g_window_height);
+
+	// Initialise default font.
+	g_font_stack[0].size = 24;
+	g_font_stack[0].col = f4(1);
+	g_font_stack[0].scale = 1;
+	g_font_stack[0].font = 0;
 
 	// Set up the gamepad library.
 	#if INCLUDE_GAMEPAD_LIBRARY
@@ -489,41 +508,82 @@ FontId LoadFont(const char* path)
 	return -1;
 }
 
+void PushFontStyle()
+{
+	if(g_font_stack_size == MAX_FONT_STACK_SIZE - 1)
+	{
+		printf("[ERR]: Font style stack is too big to push onto. Did you forget to pop?\n");
+		return;
+	}
+
+	u32 copy_from = g_font_stack_size;
+	g_font_stack_size += 1;
+	g_font_stack[g_font_stack_size] = g_font_stack[copy_from];
+}
+
+void PopFontStyle()
+{
+	if(g_font_stack_size == 0)
+	{
+		printf("[ERR]: Font style stack is already empty.\n");
+		return;
+	}
+
+	g_font_stack_size -= 1;
+}
+
+static FontState& GetFontState()
+{
+	return g_font_stack[g_font_stack_size];
+}
+
 void SetFont(FontId font)
 {
 	if (font < g_total_fonts)
 	{
-		g_active_font = font;
+		GetFontState().font = font;
 	}
 }
 
 void SetFontSize(u32 size)
 {
-	g_font_size = size;
+	GetFontState().size = size;
 }
 
 void SetFontColour(f4 col)
 {
-	g_font_col = col;
+	GetFontState().col = col;
 }
 
 void SetFontScale(float scale)
 {
-	g_font_scale = scale;
+	GetFontState().scale = scale;
 }
 
 void DrawText(const char* text, f2 pos, TextAlign align)
 {
-	if (g_total_fonts == 0)
+	FontState& font_state = GetFontState();
+	DrawText(text, font_state.font, pos, font_state.size, font_state.col, align, font_state.scale);
+}
+
+void DrawText(const char* text, FontId font, f2 pos, u32 size_px, f4 col, TextAlign align, float scale)
+{
+	if(g_total_fonts == 0)
 		return;
 
+	if(font < 0 || font >= g_total_fonts)
+	{
+		printf("Font ID is not valid!\n");
+		return;
+	}
+
 	sf::Text text_params;
-	text_params.setFont(g_fonts[g_active_font]);
-	text_params.setCharacterSize(g_font_size);
-	text_params.setColor(Col(g_font_col));
+	text_params.setFont(g_fonts[font]);
+	text_params.setCharacterSize(size_px);
+	text_params.setColor(Col(col));
 	text_params.setString(text);
 	text_params.setPosition(sf::Vector2f(pos.x, pos.y));
-	text_params.setScale(sf::Vector2f(g_font_scale, g_font_scale));
+	text_params.setScale(sf::Vector2f(scale, scale));
 
 	if (align == TextAlign::Centre)
 	{

@@ -120,11 +120,18 @@ u64		GetFrameNumber();
 //////////////////////////////////////////////////////////////////////////
 
 FontId	LoadFont(const char* path);
+
+// Stateful font API.
+void	PushFontStyle();
+void	PopFontStyle();
 void	SetFont(FontId font);
 void	SetFontSize(u32 size);
 void	SetFontColour(f4 col);
 void	SetFontScale(float scale);
-void	DrawText(const char* text, f2 pos, TextAlign align = TextAlign::Centre);
+void	DrawText(const char* text, f2 pos, TextAlign align = TextAlign::Centre); // Draws text with the current state settings.
+
+// Immediate font API.
+void	DrawText(const char* text, FontId font, f2 pos, u32 size_px, f4 col, TextAlign align = TextAlign::Centre, float scale = 1);
 
 //////////////////////////////////////////////////////////////////////////
 // Graphics API
