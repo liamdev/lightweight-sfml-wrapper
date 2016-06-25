@@ -77,6 +77,7 @@ struct vec3
 	vec3<T>& operator*=(const T v) { x *= v; y *= v; z *= v; return *this; }
 	vec3<T>& operator/=(const T v) { x /= v; y /= v; z /= v; return *this; }
 	vec3<T> operator-() { return vec3<T>(-x, -y, -z); }
+	vec2<T> xy() const { return vec2<T>(x, y); }
 };
 
 template <typename T>
@@ -104,6 +105,7 @@ struct vec4
 	vec4<T>& operator*=(const T v) { x *= v; y *= v; z *= v; w *= v; return *this; }
 	vec4<T>& operator/=(const T v) { x /= v; y /= v; z /= v; w /= v; return *this; }
 	vec4<T> operator-() { return vec4<T>(-x, -y, -z, -w); }
+	vec3<T> xyz() const { return vec3<T>(x, y, z); }
 };
 
 // Typed vector aliases.
@@ -125,6 +127,8 @@ inline f2		abs(f2 v)			{ return f2(abs(v.x), abs(v.y)); }
 inline f2		min(f2 a, f2 b)		{ return f2(min(a.x, b.x), min(a.y, b.y)); }
 inline f2		max(f2 a, f2 b)		{ return f2(max(a.x, b.x), max(a.y, b.y)); }
 inline void		print(f2 v)			{ printf("[%f %f]\n", v.x, v.y); }
+inline f2		rotate(f2 v,float a){ float ca=cos(a); float sa=sin(a); return f2(v.x*ca-v.y*sa, v.x*sa+v.y*ca); }
+inline f2		perp(f2 v) { return f2(v.y, -v.x); }
 
 //////////////////////////////////////////////////////////////////////////
 // 3D vector operations.
@@ -161,6 +165,7 @@ inline void		print(f4 v)			{ printf("[%f %f %f %f]\n", v.x, v.y, v.z, v.w); }
 
 bool SquareCircleIntersect(f2 square_pos, f2 square_size, f2 circle_pos, float circle_radius);
 bool SquareSquareIntersect(f2 square1_pos, f2 square1_size, f2 square2_pos, f2 square2_size);
+bool OBBCircleIntersect(f2 bbstart, f2 bbend, float bbwidth, f2 circle_pos, float circle_radius);
 
 //////////////////////////////////////////////////////////////////////////
 // Spline functionality.
@@ -180,3 +185,10 @@ enum class EaseType { Linear, Quadratic, Cubic, Quartic, Quintic, Sine, Exp, COU
 float EaseIn(float t, EaseType easing = EaseType::Quadratic);
 float EaseOut(float t, EaseType easing = EaseType::Quadratic);
 float EaseInOut(float t, EaseType easing = EaseType::Quadratic);
+
+//////////////////////////////////////////////////////////////////////////
+// Colour functions.
+//////////////////////////////////////////////////////////////////////////
+
+f3 RgbToHsv(f3 rgb);
+f3 HsvToRgb(f3 hsv);

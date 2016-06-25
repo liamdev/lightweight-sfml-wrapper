@@ -54,7 +54,7 @@ static double		g_frame_time = 0;
 static u64			g_frame_num = 0;
 
 // Fonts
-static const int	MAX_FONTS = 10;
+static const u16	MAX_FONTS = 10;
 static sf::Font		g_fonts[MAX_FONTS];
 static u32			g_total_fonts = 0;
 
@@ -64,24 +64,24 @@ static FontState	g_font_stack[MAX_FONT_STACK_SIZE];
 static u32			g_font_stack_size = 0;
 
 // Textures
-static const int		MAX_TEXTURES = 100;
+static const u16		MAX_TEXTURES = 100;
 static sf::Texture		g_textures[MAX_TEXTURES];
 static sf::Texture		g_no_texture;
 static u32				g_total_textures = 0;
 
 // Sprites
-static const int		MAX_SPRITES = 8192;
+static const u16		MAX_SPRITES = 8192;
 static sf::Sprite		g_sprites[MAX_SPRITES];
 static u32				g_total_sprites;
 
 // Shaders
-static const int		MAX_SHADERS = 10;
+static const u16		MAX_SHADERS = 10;
 static sf::Texture		g_postprocess_texture;
 static sf::Shader		g_shaders[MAX_SHADERS];
 static u32				g_total_shaders = 0;
 
 // Audio
-static const int		MAX_SOUNDS = 30;
+static const u16		MAX_SOUNDS = 30;
 static sf::Sound		g_sounds[MAX_SOUNDS];
 static sf::SoundBuffer	g_sound_buffers[MAX_SOUNDS];
 static u32				g_total_sounds = 0;
@@ -571,7 +571,7 @@ void DrawText(const char* text, FontId font, f2 pos, u32 size_px, f4 col, TextAl
 	if(g_total_fonts == 0)
 		return;
 
-	if(font < 0 || font >= g_total_fonts)
+	if(font >= g_total_fonts)
 	{
 		printf("Font ID is not valid!\n");
 		return;
@@ -598,11 +598,32 @@ void DrawText(const char* text, FontId font, f2 pos, u32 size_px, f4 col, TextAl
 // Graphics API
 //////////////////////////////////////////////////////////////////////////
 
-void DrawQuad(f2 pos, f2 size, f4 col)
+void DrawQuad(f2 pos, f2 size, f4 col, QuadAlign align)
+{
+	sf::Vector2f p(pos.x, pos.y);
+	if(align == QuadAlign::Centre)
+	{
+		p.x -= size.x * 0.5f;
+		p.y -= size.y * 0.5f;
+	}
+
+	sf::RectangleShape r;
+	r.setPosition(p);
+	r.setSize(sf::Vector2f(size.x, size.y));
+	r.setFillColor(Col(col));
+	g_window.draw(r);
+}
+
+void DrawQuad(f2 startpos, f2 endpos, float width, f4 col)
 {
 	sf::RectangleShape r;
-	r.setPosition(sf::Vector2f(pos.x, pos.y));
-	r.setSize(sf::Vector2f(size.x, size.y));
+	float height = length(endpos-startpos);
+	f2 dir = (endpos-startpos)/height;
+	float ang = atan2(dir.y, dir.x)-atan2(1, 0);
+	r.setOrigin(width*0.5f, 0);
+	r.setPosition(sf::Vector2f(startpos.x, startpos.y));
+	r.setSize(sf::Vector2f(width, height));
+	r.setRotation(ang*RAD_TO_DEG);
 	r.setFillColor(Col(col));
 	g_window.draw(r);
 }
@@ -692,6 +713,18 @@ void DrawSprite(SpriteId sprite, int xsegments, int xsegment)
 		}
 		g_window.draw(g_sprites[sprite]);
 	}
+}
+
+void DrawSprite(TextureId texture, f2 pos, f4 col)
+{
+	if(texture>=g_total_textures)
+		return;
+
+	sf::Sprite spr;
+	spr.setPosition(sf::Vector2f(pos.x, pos.y));
+	spr.setTexture(g_textures[texture]);
+	spr.setColor(Col(col));
+	g_window.draw(spr);
 }
 
 static sf::Sprite* GetSFMLSprite(SpriteId sprite)

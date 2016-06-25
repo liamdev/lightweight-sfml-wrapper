@@ -20,16 +20,14 @@
 
 	TODO: 
 		- Ability to set window icon.
+		- Ability to set window antialiasing option.
 		- An internal 2D physics system would be nice.
 		- Rework the sprite API to be less cumbersome.
-		- Rework the font API to be less cumbersome (add single-call API in addition to stateful one; add push/pop to stateful API).
 		- Some helper functionality for quickly creating particle systems/effects?
 		- Fix fullscreen switch requiring an alt-tab out, followed by an alt-tab back in, before the window shows its contents properly.
 		- Fix game logic continuing to run while the window is unfocused.
 		- Fix fullscreen black border + screen shake combination giving undesirable results.
 		- Fix negative coordinate clipping region not playing well with modified world region.
-
-	TODO-Optional:
 		- Option to change whether Y=0 refers to bottom or top of screen.
 */
 
@@ -49,17 +47,20 @@ typedef sf::Sprite Sprite;
 
 // Types
 typedef uint8_t		u8;
+typedef uint16_t	u16;
 typedef uint32_t	u32;
 typedef uint64_t	u64;
-typedef u32			FontId;
-typedef u32			ShaderId;
-typedef u32			SoundId;
-typedef u32			SoundInstanceId;
-typedef u32			SpriteId;
-typedef u32			TextureId;
+typedef u16			FontId;
+typedef u16			ShaderId;
+typedef u16			SoundId;
+typedef u16			SoundInstanceId;
+typedef u16			SpriteId;
+typedef u16			TextureId;
+typedef u16			BodyId;
 
 enum class SpriteOrigin { TopLeft, Centre };
-enum class TextAlign { Left, Centre };
+enum class QuadAlign	{ TopLeft, Centre };
+enum class TextAlign	{ Left, Centre };
 
 //////////////////////////////////////////////////////////////////////////
 // Game API
@@ -138,7 +139,8 @@ void	DrawText(const char* text, FontId font, f2 pos, u32 size_px, f4 col, TextAl
 //////////////////////////////////////////////////////////////////////////
 
 // Geometry library.
-void		DrawQuad(f2 pos, f2 size, f4 col);
+void		DrawQuad(f2 pos, f2 size, f4 col, QuadAlign align = QuadAlign::TopLeft);
+void		DrawQuad(f2 startpos, f2 endpos, float width, f4 col);
 void		DrawCircle(f2 pos, float radius, f4 col);
 
 // Sprite library.
@@ -153,6 +155,8 @@ void		SetPosition(SpriteId sprite, f2 pos);
 void		SetRotation(SpriteId sprite, float ang);
 void		SetScale(SpriteId sprite, f2 scale);
 void		SetColour(SpriteId sprite, f4 col);
+
+void		DrawSprite(TextureId texture, f2 pos, f4 col);
 
 // Shader library.
 ShaderId	LoadShader(const char* path);
@@ -185,6 +189,7 @@ f4		RandPastelCol();
 // Debug API
 //////////////////////////////////////////////////////////////////////////
 
+// Asserts (only active in debug builds).
 #ifdef _DEBUG
 #define ASSERT(check, msg) _ASSERT(check)
 #else
@@ -198,6 +203,8 @@ f4		RandPastelCol();
 // Windows SDK stomps all over our audio API. Undo this villainy.
 #ifdef UNICODE
 #define PlaySoundW PlaySound
+#define DrawTextW DrawText
 #else
 #define PlaySoundA PlaySound
+#define DrawTextA DrawText
 #endif
