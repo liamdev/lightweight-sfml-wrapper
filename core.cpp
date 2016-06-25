@@ -619,11 +619,11 @@ void DrawQuad(f2 startpos, f2 endpos, float width, f4 col)
 	sf::RectangleShape r;
 	float height = length(endpos-startpos);
 	f2 dir = (endpos-startpos)/height;
-	float ang = atan2(dir.y, dir.x)-atan2(1, 0);
+	float ang = float(atan2(dir.y, dir.x) - atan2(1, 0));
 	r.setOrigin(width*0.5f, 0);
 	r.setPosition(sf::Vector2f(startpos.x, startpos.y));
 	r.setSize(sf::Vector2f(width, height));
-	r.setRotation(ang*RAD_TO_DEG);
+	r.setRotation(float(ang*RAD_TO_DEG));
 	r.setFillColor(Col(col));
 	g_window.draw(r);
 }
