@@ -289,7 +289,7 @@ void EndFrame()
 static bool RecreateWindow()
 {
 	if(!g_core_initialised)
-		return;
+		return false;
 
 	sf::VideoMode video_mode(g_window_width, g_window_height);
 	if(g_window_fullscreen && !video_mode.isValid())
