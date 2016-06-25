@@ -163,6 +163,7 @@ inline void		print(f4 v)			{ printf("[%f %f %f %f]\n", v.x, v.y, v.z, v.w); }
 // Geometry helpers.
 //////////////////////////////////////////////////////////////////////////
 
+bool CircleCircleIntersect(f2 circle1_pos, float circle1_radius, f2 circle2_pos, float circle2_radius);
 bool SquareCircleIntersect(f2 square_pos, f2 square_size, f2 circle_pos, float circle_radius);
 bool SquareSquareIntersect(f2 square1_pos, f2 square1_size, f2 square2_pos, f2 square2_size);
 bool OBBCircleIntersect(f2 bbstart, f2 bbend, float bbwidth, f2 circle_pos, float circle_radius);

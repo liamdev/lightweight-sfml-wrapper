@@ -23,6 +23,9 @@ struct FontState
 // Internal state
 //////////////////////////////////////////////////////////////////////////
 
+// Internal library state
+static bool			g_core_initialised = false;
+
 // Default window settings
 static int			g_window_width = 800;
 static int			g_window_height = 600;
@@ -31,6 +34,9 @@ static int			g_window_fps = 60;
 static bool			g_window_mouse_visible = true;
 static f4			g_window_clear_col = f4(0, 0, 0, 1);
 static bool			g_window_fullscreen = false;
+static bool			g_window_show_titlebar = true;
+static bool			g_window_titlebar_minimal = true;
+static bool			g_window_antialiased = false;
 
 // Window
 static sf::RenderWindow	g_window;
@@ -97,6 +103,7 @@ static float			g_screenshake_amount = 0;
 //////////////////////////////////////////////////////////////////////////
 
 static void SetNormalisedClipRegion(f2 top_left_px, f2 size_px);
+static bool RecreateWindow();
 
 //////////////////////////////////////////////////////////////////////////
 // Internal API
@@ -111,8 +118,10 @@ f2 ScreenSize() { return f2(float(g_window_width), float(g_window_height)); }
 
 void CoreInit()
 {
+	g_core_initialised = true;
+
 	// Open the window.
-	g_window.create(sf::VideoMode(g_window_width, g_window_height), g_window_title, sf::Style::Titlebar);
+	RecreateWindow();
 
 	// Initialise random number generator.
 	g_random_seeds[0] = 0;
@@ -277,10 +286,13 @@ void EndFrame()
 // Window API
 //////////////////////////////////////////////////////////////////////////
 
-static bool RecreateWindow(int width, int height, bool fullscreen)
+static bool RecreateWindow()
 {
-	sf::VideoMode video_mode(width, height);
-	if(fullscreen && !video_mode.isValid())
+	if(!g_core_initialised)
+		return;
+
+	sf::VideoMode video_mode(g_window_width, g_window_height);
+	if(g_window_fullscreen && !video_mode.isValid())
 	{
 		const std::vector<sf::VideoMode>& video_modes = video_mode.getFullscreenModes();
 		if(video_modes.empty())
@@ -304,10 +316,15 @@ static bool RecreateWindow(int width, int height, bool fullscreen)
 		video_mode = video_modes[0];
 	}
 
-	g_window_width = video_mode.width;
-	g_window_height = video_mode.height;
-	g_window_fullscreen = fullscreen;
-	g_window.create(video_mode, g_window_title, sf::Style::Titlebar | (fullscreen ? sf::Style::Fullscreen : 0));
+	u32 windowstyle = 0;
+	windowstyle |= g_window_show_titlebar    ? sf::Style::Titlebar : 0;
+	windowstyle |= g_window_fullscreen       ? sf::Style::Fullscreen : 0;
+	windowstyle |= g_window_titlebar_minimal ? 0 : sf::Style::Default;
+
+	sf::ContextSettings settings;
+	settings.antialiasingLevel = g_window_antialiased ? 8 : 0;
+
+	g_window.create(video_mode, g_window_title, windowstyle, settings);
 	g_window.setFramerateLimit(g_window_fps);
 	g_window.setMouseCursorVisible(g_window_mouse_visible);
 	return true;
@@ -343,12 +360,17 @@ void SetWindowClearColour(f4 colour)
 	g_window_clear_col = colour;
 }
 
-void SetWindowSize(int x, int y)
+void SetWindowIcon(const char* icon_filepath)
 {
-	if(g_window_width != x || g_window_height != y)
+	sf::Image image;
+	if(!image.loadFromFile(icon_filepath))
 	{
-		RecreateWindow(x, y, g_window_fullscreen);
+		printf("[ERR]: Couldn't load window icon from: %s\n", icon_filepath);
+		return;
 	}
+
+	sf::Vector2u size = image.getSize();
+	g_window.setIcon(size.x, size.y, image.getPixelsPtr());
 }
 
 void SetWindowFullscreen(bool b)
@@ -362,7 +384,37 @@ void SetWindowFullscreen(bool b)
 			width /= g_window_scaling.x;
 			height /= g_window_scaling.y;
 		}
-		RecreateWindow(int(width), int(height), b);
+		g_window_width = int(width);
+		RecreateWindow();
+	}
+}
+
+void SetWindowShowTitlebar(bool b, bool minimal)
+{
+	if(g_window_show_titlebar != b || g_window_titlebar_minimal != minimal)
+	{
+		g_window_show_titlebar = b;
+		g_window_titlebar_minimal = minimal;
+		RecreateWindow();
+	}
+}
+
+void SetWindowAntialiased(bool b)
+{
+	if(g_window_antialiased != b)
+	{
+		g_window_antialiased = b;
+		RecreateWindow();
+	}
+}
+
+void SetWindowSize(int x, int y)
+{
+	if(g_window_width != x || g_window_height != y)
+	{
+		g_window_width = x;
+		g_window_height = y;
+		RecreateWindow();
 	}
 }
 

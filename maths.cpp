@@ -4,6 +4,12 @@
 // Geometry helpers.
 //////////////////////////////////////////////////////////////////////////
 
+bool CircleCircleIntersect(f2 circle1_pos, float circle1_radius, f2 circle2_pos, float circle2_radius)
+{
+	f2 dist = circle2_pos - circle1_pos;
+	return dot(dist, dist) <= pow(circle1_radius + circle1_radius, 2);
+}
+
 bool SquareCircleIntersect(f2 square_pos, f2 square_size, f2 circle_pos, float circle_radius)
 {
 	f2 sc = square_pos + square_size * 0.5f;

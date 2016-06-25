@@ -79,10 +79,13 @@ void SetWindowTitle(const char* title);
 void SetWindowFPSLimit(u32 fps);
 void SetWindowMouseCursorVisible(bool b);
 void SetWindowClearColour(f4 colour);
+void SetWindowIcon(const char* icon_filepath);
+void SetWindowFullscreen(bool b);
+void SetWindowShowTitlebar(bool b, bool minimal=true);
+void SetWindowAntialiased(bool b);
 
 // Window sizing / clipping / coordinates.
 void SetWindowSize(int x, int y);
-void SetWindowFullscreen(bool b);
 void SetWindowClipRegion(f2 top_left_px, f2 size_px);
 void SetWindowWorldRegion(f2 top_left_world, f2 size_world);
 void ResetWindowClipRegion();
