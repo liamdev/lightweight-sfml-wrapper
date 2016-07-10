@@ -1007,6 +1007,28 @@ double RandNorm()
 	return double(rand_u64) / u64(-1);
 }
 
+double RandGaussian(double mean, double std_dev)
+{
+	// Marsaglia polar method
+	static bool precomputed = false;
+	static double pcval = 0;
+	if(precomputed)
+	{
+		precomputed = false;
+		return mean + pcval * std_dev;
+	}
+	double x, y, s;
+	do {
+		x = RandNorm()*2-1;
+		y = RandNorm()*2-1;
+		s = x*x +y*y;
+	} while(s>=1 || s==0);
+	s = sqrt(-2 * log(s) / s);
+	pcval = s * y;
+	precomputed = true;
+	return mean + std_dev*s*x;
+}
+
 f4 RandPastelCol()
 {
 	f3 rgb((float)RandNorm(), (float)RandNorm(), (float)RandNorm());

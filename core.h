@@ -182,6 +182,7 @@ void			StopAllSounds();
 
 // Random numbers.
 double	RandNorm();
+double	RandGaussian(double mean, double std_dev);
 
 // Random colours.
 f4		RandPastelCol();
