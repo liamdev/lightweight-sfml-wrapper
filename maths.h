@@ -122,8 +122,12 @@ inline float	length(f2 v)		{ return sqrt(squared_len(v)); }
 inline f2		normalize(f2 v)		{ return v / length(v); }
 inline f2		sign(f2 v)			{ return f2(v.x < 0 ? -1.0f : 1.0f, v.y < 0 ? -1.0f : 1.0f); }
 inline f2		abs(f2 v)			{ return f2(abs(v.x), abs(v.y)); }
+inline f2		rotate(f2 v,float a){ float sa=sin(a); float ca=cos(a); return f2(v.x*ca-v.y*sa,v.x*sa+v.y*ca); }
+inline f2		perp(f2 v)			{ return f2(v.y, -v.x); }
 inline f2		min(f2 a, f2 b)		{ return f2(min(a.x, b.x), min(a.y, b.y)); }
 inline f2		max(f2 a, f2 b)		{ return f2(max(a.x, b.x), max(a.y, b.y)); }
+inline float	min2(f2 v)			{ return min(v.x, v.y); }
+inline float	max2(f2 v)			{ return max(v.x, v.y); }
 inline void		print(f2 v)			{ printf("[%f %f]\n", v.x, v.y); }
 
 //////////////////////////////////////////////////////////////////////////
@@ -139,6 +143,8 @@ inline f3		sign(f3 v)			{ return f3(v.x < 0 ? -1.0f : 1.0f, v.y < 0 ? -1.0f : 1.
 inline f3		abs(f3 v)			{ return f3(abs(v.x), abs(v.y), abs(v.z)); }
 inline f3		min(f3 a, f3 b)		{ return f3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)); }
 inline f3		max(f3 a, f3 b)		{ return f3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)); }
+inline float	min3(f3 v)			{ return min(v.x, min(v.y, v.z)); }
+inline float	max3(f3 v)			{ return max(v.x, max(v.y, v.z)); }
 inline void		print(f3 v)			{ printf("[%f %f %f]\n", v.x, v.y, v.z); }
 
 //////////////////////////////////////////////////////////////////////////
@@ -153,6 +159,8 @@ inline f4		sign(f4 v)			{ return f4(v.x < 0 ? -1.0f : 1.0f, v.y < 0 ? -1.0f : 1.
 inline f4		abs(f4 v)			{ return f4(abs(v.x), abs(v.y), abs(v.z), abs(v.w)); }
 inline f4		min(f4 a, f4 b)		{ return f4(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z), min(a.w, b.w)); }
 inline f4		max(f4 a, f4 b)		{ return f4(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z), max(a.w, b.w)); }
+inline float	min4(f4 v)			{ return min(v.x, min(v.y, min(v.z, v.w))); }
+inline float	max4(f4 v)			{ return max(v.x, max(v.y, max(v.z, v.w))); }
 inline void		print(f4 v)			{ printf("[%f %f %f %f]\n", v.x, v.y, v.z, v.w); }
 
 //////////////////////////////////////////////////////////////////////////
