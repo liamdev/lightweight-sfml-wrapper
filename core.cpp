@@ -851,7 +851,7 @@ void SetColour(SpriteId sprite, f4 col)
 	}
 }
 
-ShaderId LoadShader(const char* path)
+static ShaderId LoadShaderInternal(const char* strarg, bool fromfile)
 {
 	if(!sf::Shader::isAvailable())
 	{
@@ -861,17 +861,30 @@ ShaderId LoadShader(const char* path)
 
 	if(g_total_shaders < MAX_SHADERS)
 	{
-		if (g_shaders[g_total_shaders].loadFromFile(path, sf::Shader::Fragment))
+		bool success = fromfile ? g_shaders[g_total_shaders].loadFromFile(strarg, sf::Shader::Fragment)
+								: g_shaders[g_total_shaders].loadFromMemory(strarg, sf::Shader::Fragment);
+		if (success)
 		{
 			return g_total_shaders++;
 		}
-
-		printf("[ERR]: Could not load shader from file %s\n", path);
-		return -1;
 	}
 
-	printf("[ERR]: No remaining shader memory!\n");
+	if(fromfile)
+		printf("[ERR]: Could not load shader from file %s\n", strarg);
+	else
+		printf("[ERR]: Could not load shader from memory!\n");
+
 	return -1;
+}
+
+ShaderId LoadShaderFromString(const char* str)
+{
+	return LoadShaderInternal(str, false);
+}
+
+ShaderId LoadShaderFromFile(const char* path)
+{
+	return LoadShaderInternal(path, true);
 }
 
 void DrawPostEffects(ShaderId shader)
@@ -1027,6 +1040,11 @@ double RandGaussian(double mean, double std_dev)
 	pcval = s * y;
 	precomputed = true;
 	return mean + std_dev*s*x;
+}
+
+f2 RandDir()
+{
+	return normalize(f2(float(RandNorm()),float(RandNorm()))*2-1);
 }
 
 f4 RandPastelCol()
