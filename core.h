@@ -60,6 +60,7 @@ typedef u16			BodyId;
 enum class SpriteOrigin { TopLeft, Centre };
 enum class QuadAlign	{ TopLeft, Centre };
 enum class TextAlign	{ Left, Centre };
+enum class TitlebarStyle{ None, Minimal, Full };
 
 //////////////////////////////////////////////////////////////////////////
 // Game API
@@ -80,7 +81,7 @@ void SetWindowMouseCursorVisible(bool b);
 void SetWindowClearColour(f4 colour);
 void SetWindowIcon(const char* icon_filepath);
 void SetWindowFullscreen(bool b);
-void SetWindowShowTitlebar(bool b, bool minimal=true);
+void SetWindowTitlebarStyle(TitlebarStyle style);
 void SetWindowAntialiased(bool b);
 
 // Window sizing / clipping / coordinates.

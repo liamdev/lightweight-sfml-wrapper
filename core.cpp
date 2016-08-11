@@ -27,16 +27,16 @@ struct FontState
 static bool			g_core_initialised = false;
 
 // Default window settings
-static int			g_window_width = 800;
-static int			g_window_height = 600;
-static const char*	g_window_title = "";
-static int			g_window_fps = 60;
-static bool			g_window_mouse_visible = true;
-static f4			g_window_clear_col = f4(0, 0, 0, 1);
-static bool			g_window_fullscreen = false;
-static bool			g_window_show_titlebar = true;
-static bool			g_window_titlebar_minimal = true;
-static bool			g_window_antialiased = false;
+static int				g_window_width = 800;
+static int				g_window_height = 600;
+static const char*		g_window_title = "";
+static const char*		g_window_icon_path = "";
+static int				g_window_fps = 60;
+static bool				g_window_mouse_visible = true;
+static f4				g_window_clear_col = f4(0, 0, 0, 1);
+static bool				g_window_fullscreen = false;
+static bool				g_window_antialiased = false;
+static TitlebarStyle	g_window_titlebar_style = TitlebarStyle::Full;
 
 // Window
 static sf::RenderWindow	g_window;
@@ -104,6 +104,7 @@ static float			g_screenshake_amount = 0;
 
 static void SetNormalisedClipRegion(f2 top_left_px, f2 size_px);
 static bool RecreateWindow();
+static void UpdateWindowIcon();
 
 //////////////////////////////////////////////////////////////////////////
 // Internal API
@@ -286,6 +287,17 @@ void EndFrame()
 // Window API
 //////////////////////////////////////////////////////////////////////////
 
+static void UpdateWindowIcon()
+{
+	sf::Image iconimg;
+	if(!iconimg.loadFromFile(g_window_icon_path))
+	{
+		printf("[ERR]: Couldn't load window icon from: %s\n", g_window_icon_path);
+		return;
+	}
+	g_window.setIcon(iconimg.getSize().x, iconimg.getSize().y, iconimg.getPixelsPtr());
+}
+
 static bool RecreateWindow()
 {
 	if(!g_core_initialised)
@@ -317,9 +329,9 @@ static bool RecreateWindow()
 	}
 
 	u32 windowstyle = 0;
-	windowstyle |= g_window_show_titlebar    ? sf::Style::Titlebar : 0;
-	windowstyle |= g_window_fullscreen       ? sf::Style::Fullscreen : 0;
-	windowstyle |= g_window_titlebar_minimal ? 0 : sf::Style::Default;
+	windowstyle |= g_window_fullscreen ? sf::Style::Fullscreen : 0;
+	windowstyle |= g_window_titlebar_style == TitlebarStyle::Full    ? sf::Style::Default  : 0;
+	windowstyle |= g_window_titlebar_style == TitlebarStyle::Minimal ? sf::Style::Titlebar : 0;
 
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = g_window_antialiased ? 8 : 0;
@@ -327,6 +339,10 @@ static bool RecreateWindow()
 	g_window.create(video_mode, g_window_title, windowstyle, settings);
 	g_window.setFramerateLimit(g_window_fps);
 	g_window.setMouseCursorVisible(g_window_mouse_visible);
+
+	if(g_window_icon_path[0]!=0)
+		UpdateWindowIcon();
+
 	return true;
 }
 
@@ -362,15 +378,9 @@ void SetWindowClearColour(f4 colour)
 
 void SetWindowIcon(const char* icon_filepath)
 {
-	sf::Image image;
-	if(!image.loadFromFile(icon_filepath))
-	{
-		printf("[ERR]: Couldn't load window icon from: %s\n", icon_filepath);
-		return;
-	}
-
-	sf::Vector2u size = image.getSize();
-	g_window.setIcon(size.x, size.y, image.getPixelsPtr());
+	g_window_icon_path = icon_filepath;
+	if(g_window_icon_path[0]!=0)
+		UpdateWindowIcon();
 }
 
 void SetWindowFullscreen(bool b)
@@ -389,12 +399,11 @@ void SetWindowFullscreen(bool b)
 	}
 }
 
-void SetWindowShowTitlebar(bool b, bool minimal)
+void SetWindowTitlebarStyle(TitlebarStyle style)
 {
-	if(g_window_show_titlebar != b || g_window_titlebar_minimal != minimal)
+	if(g_window_titlebar_style != style)
 	{
-		g_window_show_titlebar = b;
-		g_window_titlebar_minimal = minimal;
+		g_window_titlebar_style = style;
 		RecreateWindow();
 	}
 }
