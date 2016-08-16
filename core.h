@@ -20,6 +20,7 @@
 
 	TODO: 
 		- An internal 2D physics system would be nice.
+		- Hit pause, making sure internal timers and whatnot don't get weird
 		- Rework the sprite API to be less cumbersome.
 		- Some helper functionality for quickly creating particle systems/effects?
 		- Fix fullscreen switch requiring an alt-tab out, followed by an alt-tab back in, before the window shows its contents properly.
@@ -59,6 +60,7 @@ typedef u16			BodyId;
 enum class SpriteOrigin { TopLeft, Centre };
 enum class QuadAlign	{ TopLeft, Centre };
 enum class TextAlign	{ Left, Centre };
+enum class TitlebarStyle{ None, Minimal, Full };
 
 //////////////////////////////////////////////////////////////////////////
 // Game API
@@ -78,7 +80,7 @@ void SetWindowMouseCursorVisible(bool b);
 void SetWindowClearColour(f4 colour);
 void SetWindowIcon(const char* icon_filepath);
 void SetWindowFullscreen(bool b);
-void SetWindowShowTitlebar(bool b, bool minimal=true);
+void SetWindowTitlebarStyle(TitlebarStyle style);
 void SetWindowAntialiased(bool b);
 
 // Window sizing / clipping / coordinates.
@@ -159,10 +161,10 @@ void		SetColour(SpriteId sprite, f4 col);
 void		DrawSprite(TextureId texture, f2 pos, f4 col);
 
 // Shader library.
-ShaderId	LoadShader(const char* path);
+ShaderId	LoadShaderFromFile(const char* path);
+ShaderId	LoadShaderFromString(const char* str);
 void		DrawPostEffects(ShaderId shader);
 void		SetShaderParameter(ShaderId shader, const char* name, float val);
-TextureId	LoadTexture(const char* path);
 
 //////////////////////////////////////////////////////////////////////////
 // Sound API
@@ -182,6 +184,7 @@ void			StopAllSounds();
 // Random numbers.
 double	RandNorm();
 double	RandGaussian(double mean, double std_dev);
+f2		RandDir();
 
 // Random colours.
 f4		RandPastelCol();
