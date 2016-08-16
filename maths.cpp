@@ -4,6 +4,12 @@
 // Geometry helpers.
 //////////////////////////////////////////////////////////////////////////
 
+bool CircleCircleIntersect(f2 circle1_pos, float circle1_radius, f2 circle2_pos, float circle2_radius)
+{
+	f2 dist = circle2_pos - circle1_pos;
+	return dot(dist, dist) <= pow(circle1_radius + circle1_radius, 2);
+}
+
 bool SquareCircleIntersect(f2 square_pos, f2 square_size, f2 circle_pos, float circle_radius)
 {
 	f2 sc = square_pos + square_size * 0.5f;
@@ -24,6 +30,20 @@ bool SquareSquareIntersect(f2 square1_pos, f2 square1_size, f2 square2_pos, f2 s
 	bool xintersect = abs(square1_pos.x - square2_pos.x) * 2 < abs(square1_size.x + square2_size.y);
 	bool yintersect = abs(square1_pos.y - square2_pos.y) * 2 < abs(square1_size.x + square2_size.y);
 	return xintersect && yintersect;
+}
+
+bool OBBCircleIntersect(f2 bbstart, f2 bbend, float bbwidth, f2 circle_pos, float circle_radius)
+{
+	// Turn this into square circle intersect by moving the circle into OBB local space.
+	f2 dir = normalize(bbend-bbstart);
+	f2 perpdir = f2(dir.y, -dir.x);
+	f2 worldXorigin = bbstart-perpdir*bbwidth*0.5f;
+	float bbang = float(atan2(dir.y, dir.x)-atan2(1, 0));
+	float sang=sin(-bbang);
+	float cang=cos(-bbang);
+	f2 localcirc = circle_pos-worldXorigin;
+	localcirc = f2(localcirc.x*cang-localcirc.y*sang, localcirc.x*sang+localcirc.y*cang);
+	return SquareCircleIntersect(0, f2(bbwidth, length(bbend-bbstart)), localcirc, circle_radius);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -123,4 +143,64 @@ float EaseInOut(float t, EaseType easing)
 		case EaseType::Exp:			{ float v=t*2;  if(v < 1) return exp(10*(v-1)); return 1-exp(-10*t); }
 		default:					printf("Unrecognised easing requested.\n"); return t;
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Colour
+//////////////////////////////////////////////////////////////////////////
+
+f3 RgbToHsv(f3 rgb)
+{
+	rgb = clamp(rgb, f3(0), f3(1));
+
+	float low  = min(rgb.x, min(rgb.y, rgb.z));
+	float high = max(rgb.x, max(rgb.y, rgb.z));
+	float delta = high - low;
+
+	if(high == 0 || delta == 0)
+		return f3(0, 0, high);
+
+	float h = 0;
+	float s = delta / high;
+	float v = high;
+
+	if(rgb.x == high)
+		h = (rgb.y - rgb.z) / delta;
+	else if(rgb.y == high)
+		h = 2 + (rgb.z - rgb.x) / delta;
+	else
+		h = 4 + (rgb.x - rgb.y) / delta;
+
+	h *= 60;
+	if(h < 0)
+		h += 360;
+
+	return f3(h/360.0f, s, v);
+}
+
+f3 HsvToRgb(f3 hsv)
+{
+	if(hsv.y == 0)
+		return f3(hsv.z);
+
+	if(hsv.x < 0)
+		hsv.x = fmod(hsv.x, 1.0f) + 1;
+	hsv.x *= 6;
+
+	int i	= (int)floor(hsv.x);
+	float f	= hsv.x - i;
+	float p = hsv.z * (1 - hsv.y);
+	float q = hsv.z * (1 - hsv.y * f);
+	float t = hsv.z * (1 - hsv.y * (1 - f));
+
+	switch(i)
+	{
+		case 0: return f3(hsv.z, t, p);
+		case 1: return f3(q, hsv.z, p);
+		case 2: return f3(p, hsv.z, t);
+		case 3: return f3(p, q, hsv.z);
+		case 4: return f3(t, p, hsv.z);
+		default:return f3(hsv.z, p, q);
+	};
 }

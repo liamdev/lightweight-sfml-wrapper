@@ -23,6 +23,9 @@ struct FontState
 // Internal state
 //////////////////////////////////////////////////////////////////////////
 
+// Internal library state
+static bool			g_core_initialised = false;
+
 // Default window settings
 static int			g_window_width = 800;
 static int			g_window_height = 600;
@@ -31,6 +34,9 @@ static int			g_window_fps = 60;
 static bool			g_window_mouse_visible = true;
 static f4			g_window_clear_col = f4(0, 0, 0, 1);
 static bool			g_window_fullscreen = false;
+static bool			g_window_show_titlebar = true;
+static bool			g_window_titlebar_minimal = true;
+static bool			g_window_antialiased = false;
 
 // Window
 static sf::RenderWindow	g_window;
@@ -54,7 +60,7 @@ static double		g_frame_time = 0;
 static u64			g_frame_num = 0;
 
 // Fonts
-static const int	MAX_FONTS = 10;
+static const u16	MAX_FONTS = 10;
 static sf::Font		g_fonts[MAX_FONTS];
 static u32			g_total_fonts = 0;
 
@@ -64,24 +70,24 @@ static FontState	g_font_stack[MAX_FONT_STACK_SIZE];
 static u32			g_font_stack_size = 0;
 
 // Textures
-static const int		MAX_TEXTURES = 100;
+static const u16		MAX_TEXTURES = 100;
 static sf::Texture		g_textures[MAX_TEXTURES];
 static sf::Texture		g_no_texture;
 static u32				g_total_textures = 0;
 
 // Sprites
-static const int		MAX_SPRITES = 8192;
+static const u16		MAX_SPRITES = 8192;
 static sf::Sprite		g_sprites[MAX_SPRITES];
 static u32				g_total_sprites;
 
 // Shaders
-static const int		MAX_SHADERS = 10;
+static const u16		MAX_SHADERS = 10;
 static sf::Texture		g_postprocess_texture;
 static sf::Shader		g_shaders[MAX_SHADERS];
 static u32				g_total_shaders = 0;
 
 // Audio
-static const int		MAX_SOUNDS = 30;
+static const u16		MAX_SOUNDS = 30;
 static sf::Sound		g_sounds[MAX_SOUNDS];
 static sf::SoundBuffer	g_sound_buffers[MAX_SOUNDS];
 static u32				g_total_sounds = 0;
@@ -97,6 +103,7 @@ static float			g_screenshake_amount = 0;
 //////////////////////////////////////////////////////////////////////////
 
 static void SetNormalisedClipRegion(f2 top_left_px, f2 size_px);
+static bool RecreateWindow();
 
 //////////////////////////////////////////////////////////////////////////
 // Internal API
@@ -111,8 +118,10 @@ f2 ScreenSize() { return f2(float(g_window_width), float(g_window_height)); }
 
 void CoreInit()
 {
+	g_core_initialised = true;
+
 	// Open the window.
-	g_window.create(sf::VideoMode(g_window_width, g_window_height), g_window_title, sf::Style::Titlebar);
+	RecreateWindow();
 
 	// Initialise random number generator.
 	g_random_seeds[0] = 0;
@@ -141,6 +150,19 @@ void CoreInit()
 
 bool StartFrame()
 {
+	//------------------------------------------------------------------------
+	// End of the existing frame.
+	//------------------------------------------------------------------------
+	// Draw the window contents.
+	g_window.display();
+
+	// Reset clipping and coordinate regions.
+	SetNormalisedClipRegion(f2(0), f2(1));
+	SetWindowWorldRegion(f2(0), ScreenSize());
+
+	//------------------------------------------------------------------------
+	// Start of the new frame.
+	//------------------------------------------------------------------------
 	// Update timings.
 	g_total_time = g_clock.getElapsedTime().asMicroseconds() / (1000.0 * 1000.0);
 	g_frame_time = g_frameclock.restart().asMicroseconds() / (1000.0 * 1000.0);
@@ -263,24 +285,17 @@ bool StartFrame()
 	return g_window.isOpen();
 }
 
-void EndFrame()
-{
-	// Draw the window contents.
-	g_window.display();
-
-	// Reset clipping and coordinate regions.
-	SetNormalisedClipRegion(f2(0), f2(1));
-	SetWindowWorldRegion(f2(0), ScreenSize());
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Window API
 //////////////////////////////////////////////////////////////////////////
 
-static bool RecreateWindow(int width, int height, bool fullscreen)
+static bool RecreateWindow()
 {
-	sf::VideoMode video_mode(width, height);
-	if(fullscreen && !video_mode.isValid())
+	if(!g_core_initialised)
+		return false;
+
+	sf::VideoMode video_mode(g_window_width, g_window_height);
+	if(g_window_fullscreen && !video_mode.isValid())
 	{
 		const std::vector<sf::VideoMode>& video_modes = video_mode.getFullscreenModes();
 		if(video_modes.empty())
@@ -304,10 +319,15 @@ static bool RecreateWindow(int width, int height, bool fullscreen)
 		video_mode = video_modes[0];
 	}
 
-	g_window_width = video_mode.width;
-	g_window_height = video_mode.height;
-	g_window_fullscreen = fullscreen;
-	g_window.create(video_mode, g_window_title, sf::Style::Titlebar | (fullscreen ? sf::Style::Fullscreen : 0));
+	u32 windowstyle = 0;
+	windowstyle |= g_window_show_titlebar    ? sf::Style::Titlebar : 0;
+	windowstyle |= g_window_fullscreen       ? sf::Style::Fullscreen : 0;
+	windowstyle |= g_window_titlebar_minimal ? 0 : sf::Style::Default;
+
+	sf::ContextSettings settings;
+	settings.antialiasingLevel = g_window_antialiased ? 8 : 0;
+
+	g_window.create(video_mode, g_window_title, windowstyle, settings);
 	g_window.setFramerateLimit(g_window_fps);
 	g_window.setMouseCursorVisible(g_window_mouse_visible);
 	return true;
@@ -343,12 +363,17 @@ void SetWindowClearColour(f4 colour)
 	g_window_clear_col = colour;
 }
 
-void SetWindowSize(int x, int y)
+void SetWindowIcon(const char* icon_filepath)
 {
-	if(g_window_width != x || g_window_height != y)
+	sf::Image image;
+	if(!image.loadFromFile(icon_filepath))
 	{
-		RecreateWindow(x, y, g_window_fullscreen);
+		printf("[ERR]: Couldn't load window icon from: %s\n", icon_filepath);
+		return;
 	}
+
+	sf::Vector2u size = image.getSize();
+	g_window.setIcon(size.x, size.y, image.getPixelsPtr());
 }
 
 void SetWindowFullscreen(bool b)
@@ -362,7 +387,37 @@ void SetWindowFullscreen(bool b)
 			width /= g_window_scaling.x;
 			height /= g_window_scaling.y;
 		}
-		RecreateWindow(int(width), int(height), b);
+		g_window_width = int(width);
+		RecreateWindow();
+	}
+}
+
+void SetWindowShowTitlebar(bool b, bool minimal)
+{
+	if(g_window_show_titlebar != b || g_window_titlebar_minimal != minimal)
+	{
+		g_window_show_titlebar = b;
+		g_window_titlebar_minimal = minimal;
+		RecreateWindow();
+	}
+}
+
+void SetWindowAntialiased(bool b)
+{
+	if(g_window_antialiased != b)
+	{
+		g_window_antialiased = b;
+		RecreateWindow();
+	}
+}
+
+void SetWindowSize(int x, int y)
+{
+	if(g_window_width != x || g_window_height != y)
+	{
+		g_window_width = x;
+		g_window_height = y;
+		RecreateWindow();
 	}
 }
 
@@ -571,7 +626,7 @@ void DrawText(const char* text, FontId font, f2 pos, u32 size_px, f4 col, TextAl
 	if(g_total_fonts == 0)
 		return;
 
-	if(font < 0 || font >= g_total_fonts)
+	if(font >= g_total_fonts)
 	{
 		printf("Font ID is not valid!\n");
 		return;
@@ -598,11 +653,32 @@ void DrawText(const char* text, FontId font, f2 pos, u32 size_px, f4 col, TextAl
 // Graphics API
 //////////////////////////////////////////////////////////////////////////
 
-void DrawQuad(f2 pos, f2 size, f4 col)
+void DrawQuad(f2 pos, f2 size, f4 col, QuadAlign align)
+{
+	sf::Vector2f p(pos.x, pos.y);
+	if(align == QuadAlign::Centre)
+	{
+		p.x -= size.x * 0.5f;
+		p.y -= size.y * 0.5f;
+	}
+
+	sf::RectangleShape r;
+	r.setPosition(p);
+	r.setSize(sf::Vector2f(size.x, size.y));
+	r.setFillColor(Col(col));
+	g_window.draw(r);
+}
+
+void DrawQuad(f2 startpos, f2 endpos, float width, f4 col)
 {
 	sf::RectangleShape r;
-	r.setPosition(sf::Vector2f(pos.x, pos.y));
-	r.setSize(sf::Vector2f(size.x, size.y));
+	float height = length(endpos-startpos);
+	f2 dir = (endpos-startpos)/height;
+	float ang = float(atan2(dir.y, dir.x) - atan2(1, 0));
+	r.setOrigin(width*0.5f, 0);
+	r.setPosition(sf::Vector2f(startpos.x, startpos.y));
+	r.setSize(sf::Vector2f(width, height));
+	r.setRotation(float(ang*RAD_TO_DEG));
 	r.setFillColor(Col(col));
 	g_window.draw(r);
 }
@@ -692,6 +768,18 @@ void DrawSprite(SpriteId sprite, int xsegments, int xsegment)
 		}
 		g_window.draw(g_sprites[sprite]);
 	}
+}
+
+void DrawSprite(TextureId texture, f2 pos, f4 col)
+{
+	if(texture>=g_total_textures)
+		return;
+
+	sf::Sprite spr;
+	spr.setPosition(sf::Vector2f(pos.x, pos.y));
+	spr.setTexture(g_textures[texture]);
+	spr.setColor(Col(col));
+	g_window.draw(spr);
 }
 
 static sf::Sprite* GetSFMLSprite(SpriteId sprite)
@@ -920,6 +1008,28 @@ double RandNorm()
 	g_random_seeds[1] = s1 ^ s0 ^ (s1 >> 18) ^ (s0 >> 5);
 	u64 rand_u64 = g_random_seeds[1] + s0;
 	return double(rand_u64) / u64(-1);
+}
+
+double RandGaussian(double mean, double std_dev)
+{
+	// Marsaglia polar method
+	static bool precomputed = false;
+	static double pcval = 0;
+	if(precomputed)
+	{
+		precomputed = false;
+		return mean + pcval * std_dev;
+	}
+	double x, y, s;
+	do {
+		x = RandNorm()*2-1;
+		y = RandNorm()*2-1;
+		s = x*x +y*y;
+	} while(s>=1 || s==0);
+	s = sqrt(-2 * log(s) / s);
+	pcval = s * y;
+	precomputed = true;
+	return mean + std_dev*s*x;
 }
 
 f4 RandPastelCol()
